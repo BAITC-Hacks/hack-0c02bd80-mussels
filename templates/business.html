@@ -3,24 +3,539 @@
 {% block title %}Кабинет бизнеса | AI Sana{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="businessCabinetApp()">
+  
+  <!-- Page Header -->
   <div class="mb-8">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-3">
-      Модуль 04: Бизнес
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+      <span>Кабинет бизнеса</span>
     </div>
-    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-      Кабинет бизнеса
-    </h1>
-    <p class="mt-2 text-base text-slate-600 max-w-3xl">
-      Управление откликами команд, ручной выбор исполнителя и мониторинг контрольных этапов с подтверждением начисления XP.
-    </p>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+          Кабинет бизнеса и управление проектами
+        </h1>
+        <p class="mt-2 text-base text-slate-600 max-w-3xl">
+          Мониторинг контрольных этапов, начисление баллов прогресса (+XP) и ручной выбор студенческих команд согласно ADR-0003.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/catalog" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition shadow-sm">
+          <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          <span>В каталог задач</span>
+        </a>
+      </div>
+    </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-12 text-center">
-    <h3 class="text-lg font-semibold text-slate-800 mb-2">Кабинет бизнеса в разработке</h3>
-    <p class="text-sm text-slate-500 max-w-md mx-auto">
-      Раздел будет реализован в рамках Тикета 04 с интерактивной шкалой прогресса и кнопками подтверждения этапов (+XP).
-    </p>
+  <!-- Master-Detail Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left Column: Task Selector (4 cols) -->
+    <div class="lg:col-span-4 space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">
+          Задачи компании (<span x-text="tasks.length"></span>)
+        </h2>
+      </div>
+
+      <!-- Task cards list -->
+      <div class="space-y-3">
+        <template x-for="task in tasks" :key="task.id">
+          <div @click="selectTask(task.id)"
+               class="p-4 rounded-xl border transition cursor-pointer text-left relative"
+               :class="selectedTaskId === task.id ? 'bg-white border-indigo-600 shadow-md ring-2 ring-indigo-500/20' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm hover:shadow'">
+            
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                    :class="{
+                      'bg-emerald-50 text-emerald-700 border border-emerald-200': task.readiness_level === 'Приоритетная',
+                      'bg-blue-50 text-blue-700 border border-blue-200': task.readiness_level === 'Готовая',
+                      'bg-amber-50 text-amber-700 border border-amber-200': task.readiness_level === 'Рабочая',
+                      'bg-rose-50 text-rose-700 border border-rose-200': task.readiness_level === 'Черновик'
+                    }"
+                    x-text="task.readiness_level">
+              </span>
+              <span class="text-xs font-bold text-slate-500" x-text="task.rating + '/100'"></span>
+            </div>
+
+            <h3 class="text-sm font-bold text-slate-900 line-clamp-2" x-text="task.title"></h3>
+            
+            <p class="text-xs text-slate-500 mt-1 line-clamp-1" x-text="task.industry"></p>
+
+            <!-- Quick stats footer -->
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span x-text="task.progress.completed_count + ' из ' + task.progress.total_count + ' этапов'"></span>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span class="font-semibold" x-text="task.proposals.length + ' откл.'"></span>
+              </div>
+            </div>
+
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Right Column: Selected Task Details, Milestones & Proposals (8 cols) -->
+    <div class="lg:col-span-8 space-y-6" x-show="activeTask">
+      
+      <!-- Selected Task Header Card -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700" x-text="activeTask.industry"></span>
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700" x-text="activeTask.task_type"></span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold"
+                  :class="{
+                    'bg-emerald-50 text-emerald-700 border border-emerald-200': activeTask.readiness_level === 'Приоритетная',
+                    'bg-blue-50 text-blue-700 border border-blue-200': activeTask.readiness_level === 'Готовая',
+                    'bg-amber-50 text-amber-700 border border-amber-200': activeTask.readiness_level === 'Рабочая',
+                    'bg-rose-50 text-rose-700 border border-rose-200': activeTask.readiness_level === 'Черновик'
+                  }"
+                  x-text="activeTask.readiness_level + ' (' + activeTask.rating + '/100)'">
+            </span>
+          </div>
+          <div class="text-xs text-slate-500" x-text="'ID: ' + activeTask.id"></div>
+        </div>
+
+        <h2 class="text-xl font-extrabold text-slate-900" x-text="activeTask.title"></h2>
+        
+        <p class="mt-3 text-sm text-slate-600" x-text="activeTask.context_need"></p>
+
+        <!-- Business Contact -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span class="font-medium text-slate-700" x-text="activeTask.business_contact || 'Контакты представителя бизнеса'"></span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-slate-400">Опубликовано:</span>
+            <span class="font-medium text-slate-600" x-text="(activeTask.created_at || '').substring(0, 10)"></span>
+          </div>
+        </div>
+
+        <!-- Selected Team Status Banner -->
+        <div class="mt-4 p-4 rounded-xl border text-sm"
+             :class="activeTask.accepted_proposal ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' : 'bg-amber-50/70 border-amber-200 text-amber-950'">
+          <div class="flex items-start gap-3">
+            <div class="p-1 rounded-full shrink-0"
+                 :class="activeTask.accepted_proposal ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-800'">
+              <svg x-show="activeTask.accepted_proposal" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg x-show="!activeTask.accepted_proposal" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <div class="font-bold">
+                <span x-show="activeTask.accepted_proposal">
+                  Исполнитель выбран: <span class="text-emerald-900 underline" x-text="activeTask.accepted_proposal ? activeTask.accepted_proposal.team_name : ''"></span>
+                </span>
+                <span x-show="!activeTask.accepted_proposal">
+                  Команда еще не утверждена
+                </span>
+              </div>
+              <div class="text-xs mt-1" :class="activeTask.accepted_proposal ? 'text-emerald-800' : 'text-amber-800'">
+                <span x-show="activeTask.accepted_proposal">
+                  Команда выполняет контрольные этапы. Вы можете подтверждать результаты работы и начислять баллы прогресса (+XP) ниже.
+                </span>
+                <span x-show="!activeTask.accepted_proposal">
+                  Ознакомьтесь с поступившими откликами в секции ниже и сделайте ручной выбор исполнителя (ADR-0003).
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION 1: Milestones Progress Bar & Confirmation Cards -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Активные задачи и шкала этапов
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-1">
+              Шкала прогресса контрольных этапов
+            </h3>
+          </div>
+
+          <!-- XP Badges -->
+          <div class="flex items-center gap-3">
+            <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-right">
+              <div class="text-[10px] uppercase font-bold text-slate-400">Начислено XP</div>
+              <div class="text-base font-extrabold text-indigo-600" x-text="activeTask.progress.earned_xp + ' / ' + activeTask.progress.total_xp + ' XP'"></div>
+            </div>
+            <div class="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-right">
+              <div class="text-[10px] uppercase font-bold text-emerald-700">Завершено</div>
+              <div class="text-base font-extrabold text-emerald-700" x-text="activeTask.progress.percentage + '%'"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="space-y-2 mb-6">
+          <div class="flex justify-between text-xs font-semibold text-slate-600">
+            <span x-text="activeTask.progress.completed_count + ' из ' + activeTask.progress.total_count + ' этапов завершено (' + activeTask.progress.percentage + '%)'"></span>
+            <span class="text-slate-400" x-text="'Потенциал: +' + (activeTask.progress.total_xp - activeTask.progress.earned_xp) + ' XP'"></span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200/80">
+            <div class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-3.5 rounded-full transition-all duration-500 ease-out"
+                 :style="'width: ' + activeTask.progress.percentage + '%'"></div>
+          </div>
+        </div>
+
+        <!-- Milestone Cards List -->
+        <div class="space-y-3">
+          <template x-for="(milestone, index) in activeTask.milestones" :key="milestone.id">
+            <div class="p-4 rounded-xl border transition-all"
+                 :class="milestone.status === 'completed' ? 'bg-emerald-50/30 border-emerald-200' : 'bg-white border-slate-200 hover:border-slate-300'">
+              
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                
+                <!-- Left: Stage icon & title -->
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5"
+                       :class="milestone.status === 'completed' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 border border-slate-300'">
+                    <template x-if="milestone.status === 'completed'">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </template>
+                    <template x-if="milestone.status !== 'completed'">
+                      <span x-text="index + 1"></span>
+                    </template>
+                  </div>
+
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="text-sm font-bold text-slate-900" x-text="milestone.title"></h4>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold"
+                            :class="milestone.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
+                            x-text="milestone.status === 'completed' ? 'Завершен' : 'В работе'">
+                      </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500">
+                      <span class="font-semibold text-indigo-600" x-text="'+' + milestone.points + ' XP'"></span>
+                      <template x-if="milestone.completed_at">
+                        <span class="text-slate-400" x-text="'Подтвержден: ' + (milestone.completed_at || '').substring(0, 16).replace('T', ' ')"></span>
+                      </template>
+                      <template x-if="!milestone.completed_at">
+                        <span class="text-slate-400">Ожидает проверки представителем бизнеса</span>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: Action Button -->
+                <div class="shrink-0 flex items-center gap-2">
+                  <template x-if="milestone.status === 'completed'">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200">
+                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Баллы начислены</span>
+                    </span>
+                  </template>
+
+                  <template x-if="milestone.status !== 'completed'">
+                    <button type="button"
+                            @click="completeMilestone(activeTask.id, milestone.id)"
+                            :disabled="completingMilestoneId === milestone.id"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm disabled:opacity-50">
+                      <svg x-show="completingMilestoneId !== milestone.id" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <svg x-show="completingMilestoneId === milestone.id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span x-text="completingMilestoneId === milestone.id ? 'Начисление...' : 'Подтвердить этап (+XP)'">Подтвердить этап (+XP)</span>
+                    </button>
+                  </template>
+                </div>
+
+              </div>
+
+            </div>
+          </template>
+        </div>
+
+      </div>
+
+      <!-- SECTION 2: Incoming Proposals & Manual Selection (ADR-0003) -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Входящие отклики команд
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-1">
+              Предложения студенческих команд (<span x-text="activeTask.proposals.length"></span>)
+            </h3>
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>ADR-0003: Ручной выбор</span>
+          </div>
+        </div>
+
+        <!-- ADR-0003 Policy Notice -->
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 mb-6 flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <span class="font-bold text-slate-800">Принцип исключительно ручного выбора:</span>
+            Автоматическое назначение команд платформой категорически запрещено. Вы самостоятельно сравниваете идеи решений, стеки технологий и сроки, после чего вручную нажимаете «Выбрать команду» или «Отклонить».
+          </div>
+        </div>
+
+        <!-- Empty state if no proposals -->
+        <template x-if="activeTask.proposals.length === 0">
+          <div class="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
+            <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <div class="text-sm font-bold text-slate-700">Откликов пока нет</div>
+            <div class="text-xs text-slate-500 mt-1">Студенческие команды изучают карточку в общем каталоге. Скоро здесь появятся первые предложения.</div>
+          </div>
+        </template>
+
+        <!-- Proposals Cards List -->
+        <div class="space-y-4">
+          <template x-for="prop in activeTask.proposals" :key="prop.id">
+            <div class="p-5 rounded-xl border transition-all"
+                 :class="{
+                   'bg-emerald-50/20 border-emerald-300 ring-1 ring-emerald-500/20': prop.status === 'accepted',
+                   'bg-slate-50/50 border-slate-200 opacity-75': prop.status === 'rejected',
+                   'bg-white border-slate-200 hover:border-slate-300 shadow-sm': prop.status === 'pending'
+                 }">
+              
+              <!-- Proposal Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                  <h4 class="text-base font-extrabold text-slate-900" x-text="prop.team_name"></h4>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold"
+                        :class="{
+                          'bg-emerald-100 text-emerald-800 border border-emerald-200': prop.status === 'accepted',
+                          'bg-rose-100 text-rose-800 border border-rose-200': prop.status === 'rejected',
+                          'bg-amber-100 text-amber-800 border border-amber-200': prop.status === 'pending'
+                        }"
+                        x-text="prop.status === 'accepted' ? 'Команда выбрана' : (prop.status === 'rejected' ? 'Отклонено' : 'Ожидает решения')">
+                  </span>
+                </div>
+                <div class="text-xs text-slate-400" x-text="'Подано: ' + (prop.submitted_at || '').substring(0, 10)"></div>
+              </div>
+
+              <!-- Team Skills Chips -->
+              <div class="flex flex-wrap items-center gap-1.5 mb-3" x-show="prop.team_skills && prop.team_skills.length">
+                <span class="text-xs font-semibold text-slate-500 mr-1">Стек команды:</span>
+                <template x-for="skill in prop.team_skills" :key="skill">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200" x-text="skill"></span>
+                </template>
+              </div>
+
+              <!-- Solution Idea -->
+              <div class="mb-3">
+                <div class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">Идея решения</div>
+                <div class="text-xs text-slate-800 leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-100" x-text="prop.solution_idea"></div>
+              </div>
+
+              <!-- Plan & Timeline Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div class="bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                  <div class="text-[11px] font-bold text-slate-500 uppercase">План реализации</div>
+                  <div class="text-xs text-slate-700 mt-1" x-text="prop.plan"></div>
+                </div>
+                <div class="bg-slate-50/70 p-3 rounded-lg border border-slate-100 flex flex-col justify-between">
+                  <div>
+                    <div class="text-[11px] font-bold text-slate-500 uppercase">Сроки и прототип</div>
+                    <div class="text-xs font-semibold text-slate-800 mt-1" x-text="'Срок: ' + prop.timeline"></div>
+                  </div>
+                  <div class="mt-2" x-show="prop.prototype_url">
+                    <a :href="prop.prototype_url" target="_blank" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      <span>Репозиторий прототипа</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review Comment if any -->
+              <div class="mb-4 p-3 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs text-indigo-900" x-show="prop.review_comment">
+                <span class="font-bold">Комментарий бизнеса:</span>
+                <span x-text="prop.review_comment"></span>
+              </div>
+
+              <!-- Manual Action Buttons (ADR-0003) -->
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div class="text-xs text-slate-500">
+                  <span>Решение представителя бизнеса:</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button"
+                          @click="updateProposalStatus(prop.id, 'rejected')"
+                          :disabled="isUpdatingProposalId === prop.id"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-white border border-rose-300 hover:bg-rose-50 active:bg-rose-100 transition shadow-sm disabled:opacity-50">
+                    <svg class="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Отклонить</span>
+                  </button>
+
+                  <button type="button"
+                          @click="updateProposalStatus(prop.id, 'accepted')"
+                          :disabled="isUpdatingProposalId === prop.id"
+                          class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition shadow-sm disabled:opacity-50">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Выбрать команду</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </template>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
+
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function businessCabinetApp() {
+    return {
+      tasks: {{ tasks_json | safe }},
+      selectedTaskId: null,
+      completingMilestoneId: null,
+      isUpdatingProposalId: null,
+
+      init() {
+        if (this.tasks && this.tasks.length > 0) {
+          this.selectedTaskId = this.tasks[0].id;
+        }
+      },
+
+      get activeTask() {
+        if (!this.tasks || this.tasks.length === 0) return null;
+        return this.tasks.find(t => t.id === this.selectedTaskId) || this.tasks[0];
+      },
+
+      selectTask(taskId) {
+        this.selectedTaskId = taskId;
+      },
+
+      async completeMilestone(taskId, milestoneId) {
+        this.completingMilestoneId = milestoneId;
+        try {
+          const resp = await fetch(`/api/milestones/${taskId}/${milestoneId}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (!resp.ok) {
+            throw new Error('Ошибка сервера при подтверждении этапа');
+          }
+
+          const data = await resp.json();
+          if (data.status === 'ok') {
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) {
+              const ms = task.milestones.find(m => m.id === milestoneId);
+              if (ms) {
+                ms.status = 'completed';
+                ms.completed_at = data.milestone.completed_at || new Date().toISOString();
+              }
+              if (data.progress) {
+                task.progress = data.progress;
+              }
+            }
+            if (window.globalApp && typeof window.globalApp().showToast === 'function') {
+              window.globalApp().showToast(`Этап подтвержден! Начислено +${data.awarded_xp || 25} XP`);
+            }
+          }
+        } catch (err) {
+          alert(err.message || 'Не удалось подтвердить этап');
+        } finally {
+          this.completingMilestoneId = null;
+        }
+      },
+
+      async updateProposalStatus(proposalId, newStatus) {
+        this.isUpdatingProposalId = proposalId;
+        const comment = newStatus === 'accepted' 
+          ? 'Команда выбрана представителем бизнеса для реализации проекта.'
+          : 'Отклонено представителем бизнеса после сравнительного анализа предложений.';
+        
+        try {
+          const resp = await fetch(`/api/proposals/${proposalId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus, comment: comment })
+          });
+
+          if (!resp.ok) {
+            throw new Error('Ошибка при обновлении статуса предложения');
+          }
+
+          const data = await resp.json();
+          if (data.status === 'ok') {
+            for (const task of this.tasks) {
+              const prop = task.proposals.find(p => p.id === proposalId);
+              if (prop) {
+                prop.status = newStatus;
+                prop.review_comment = comment;
+                if (newStatus === 'accepted') {
+                  task.accepted_proposal = prop;
+                } else if (task.accepted_proposal && task.accepted_proposal.id === proposalId) {
+                  task.accepted_proposal = null;
+                }
+              }
+            }
+            const msg = newStatus === 'accepted' ? 'Команда успешно выбрана!' : 'Отклик команды отклонен';
+            if (window.globalApp && typeof window.globalApp().showToast === 'function') {
+              window.globalApp().showToast(msg);
+            }
+          }
+        } catch (err) {
+          alert(err.message || 'Ошибка обновления статуса');
+        } finally {
+          this.isUpdatingProposalId = null;
+        }
+      }
+
+    }
+  }
+</script>
 {% endblock %}

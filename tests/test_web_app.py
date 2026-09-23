@@ -211,6 +211,99 @@ def test_catalog_tasks_json_data(client):
 
 
 
+def test_business_page_renders_tasks_milestones_and_proposals(client):
+    response = client.get("/business")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    content = response.text
+    assert "Кабинет бизнеса" in content
+    assert "Шкала прогресса" in content or "контрольных этапов" in content
+    assert "Входящие отклики команд" in content or "Отклики команд" in content
+    assert "Выбрать команду" in content
+    assert "Отклонить" in content
+    assert "Подтвердить этап" in content or "+XP" in content
+    # Ensure tasks and proposals from seed data are rendered
+    assert "Интеллектуальный ассистент клиентской поддержки" in content or "task-001" in content
+    assert "NeuralMinds" in content or "EdTech Innovators" in content
+
+
+def test_milestone_complete_endpoint(client):
+    from server import storage
+    storage.reset_all_data()
+
+    # Find an in_progress milestone for task-001
+    milestones = storage.load_milestones()
+    target_ms = next((m for m in milestones if m.get("task_id") == "task-001" and m.get("status") != "completed"), None)
+    assert target_ms is not None, "Must have an in_progress milestone for task-001"
+    ms_id = target_ms["id"]
+
+    team_id = target_ms.get("team_id") or "team-001"
+    team_before = storage.get_team_by_id(team_id)
+    points_before = team_before.get("progress_points", 0)
+
+    # Call complete endpoint
+    resp = client.post(f"/api/milestones/task-001/{ms_id}/complete")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data.get("status") == "ok"
+    assert data.get("milestone") is not None
+    assert data["milestone"]["status"] == "completed"
+    assert data["milestone"]["completed_at"] is not None
+    assert data.get("awarded_xp") == target_ms.get("points", 25)
+    assert "progress" in data
+    assert data["progress"]["completed_count"] >= 1
+    assert data["progress"]["earned_xp"] >= target_ms.get("points", 25)
+
+    # Verify team progress points updated in storage
+    team_after = storage.get_team_by_id(team_id)
+    assert team_after["progress_points"] == points_before + target_ms.get("points", 25)
+    assert ms_id in team_after.get("completed_milestones", [])
+
+    # Completing already completed milestone should return ok without double-awarding
+    resp2 = client.post(f"/api/milestones/task-001/{ms_id}/complete")
+    assert resp2.status_code == 200
+    team_after_repeat = storage.get_team_by_id(team_id)
+    assert team_after_repeat["progress_points"] == team_after["progress_points"]
+
+
+def test_proposal_status_update_endpoint(client):
+    from server import storage
+    storage.reset_all_data()
+
+    # prop-002 is originally pending
+    proposals = storage.load_proposals()
+    prop_002 = next((p for p in proposals if p["id"] == "prop-002"), None)
+    assert prop_002 is not None
+    assert prop_002.get("status") == "pending"
+
+    # Accept proposal
+    accept_resp = client.post(
+        "/api/proposals/prop-002/status",
+        json={"status": "accepted", "comment": "Отличная идея решения, берем в работу"}
+    )
+    assert accept_resp.status_code == 200
+    accept_data = accept_resp.json()
+    assert accept_data.get("status") == "ok"
+    assert accept_data.get("proposal")["status"] == "accepted"
+    assert accept_data.get("proposal")["review_comment"] == "Отличная идея решения, берем в работу"
+
+    # Verify in storage
+    updated_prop = next((p for p in storage.load_proposals() if p["id"] == "prop-002"), None)
+    assert updated_prop["status"] == "accepted"
+    assert updated_prop["review_comment"] == "Отличная идея решения, берем в работу"
+
+    # Reject proposal prop-004
+    reject_resp = client.post(
+        "/api/proposals/prop-004/status",
+        json={"status": "rejected", "comment": "Стек не соответствует требованиям"}
+    )
+    assert reject_resp.status_code == 200
+    reject_data = reject_resp.json()
+    assert reject_data.get("status") == "ok"
+    assert reject_data.get("proposal")["status"] == "rejected"
+    assert reject_data.get("proposal")["review_comment"] == "Стек не соответствует требованиям"
+
+
 def test_no_emojis_in_web_code():
     emoji_pattern = re.compile(
         "["
@@ -239,3 +332,4 @@ def test_no_emojis_in_web_code():
             text = file_path.read_text(encoding="utf-8")
             matches = emoji_pattern.findall(text)
             assert not matches, f"Emoji found in {file_path}: {matches}"
+

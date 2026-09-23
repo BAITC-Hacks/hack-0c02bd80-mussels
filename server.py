@@ -169,6 +169,59 @@ async def catalog_page(request: Request):
     )
 
 
+class ProposalStatusRequest(BaseModel):
+    status: str
+    comment: Optional[str] = ""
+
+
+def get_business_cabinet_data() -> List[Dict[str, Any]]:
+    tasks = storage.load_tasks()
+    all_milestones = storage.load_milestones()
+    all_proposals = storage.load_proposals()
+    teams = {t["id"]: t for t in storage.load_teams()}
+
+    enriched_tasks = []
+    for t in tasks:
+        task_id = t.get("id")
+        task_ms = [m for m in all_milestones if m.get("task_id") == task_id]
+        if not task_ms and t.get("milestones"):
+            task_ms = t.get("milestones")
+
+        completed_count = sum(1 for m in task_ms if m.get("status") == "completed")
+        total_count = len(task_ms)
+        percentage = int(round((completed_count / total_count) * 100)) if total_count > 0 else 0
+        earned_xp = sum(m.get("points", 0) for m in task_ms if m.get("status") == "completed")
+        total_xp = sum(m.get("points", 0) for m in task_ms)
+        potential_xp = total_xp - earned_xp
+
+        task_props = [p for p in all_proposals if p.get("task_id") == task_id]
+        for p in task_props:
+            team = teams.get(p.get("team_id"), {})
+            p["team_skills"] = team.get("skills", [])
+            p["team_progress_points"] = team.get("progress_points", 0)
+
+        accepted_prop = next((p for p in task_props if p.get("status") == "accepted"), None)
+        accepted_team = teams.get(accepted_prop.get("team_id")) if accepted_prop else None
+
+        enriched_tasks.append({
+            **t,
+            "milestones": task_ms,
+            "proposals": task_props,
+            "progress": {
+                "completed_count": completed_count,
+                "total_count": total_count,
+                "percentage": percentage,
+                "earned_xp": earned_xp,
+                "total_xp": total_xp,
+                "potential_xp": potential_xp
+            },
+            "accepted_proposal": accepted_prop,
+            "accepted_team": accepted_team
+        })
+
+    return enriched_tasks
+
+
 @app.api_route("/student", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def student_page(request: Request):
     return templates.TemplateResponse(
@@ -183,14 +236,87 @@ async def student_page(request: Request):
 
 @app.api_route("/business", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def business_page(request: Request):
+    tasks = get_business_cabinet_data()
+    tasks_json = json.dumps(tasks, ensure_ascii=False)
     return templates.TemplateResponse(
         request=request,
         name="business.html",
         context={
             "current_route": "/business",
             "ai_status": get_ai_status(),
+            "tasks": tasks,
+            "tasks_json": tasks_json,
         }
     )
+
+
+@app.post("/api/milestones/{task_id}/{milestone_id}/complete")
+async def complete_milestone_endpoint(task_id: str, milestone_id: str):
+    all_milestones = storage.load_milestones()
+    target = next((m for m in all_milestones if m.get("id") == milestone_id), None)
+    if not target:
+        return JSONResponse({"status": "error", "message": "Этап не найден"}, status_code=404)
+
+    if not target.get("team_id"):
+        proposals = storage.get_proposals_for_task(task_id)
+        accepted_prop = next((p for p in proposals if p.get("status") == "accepted"), None)
+        if accepted_prop and accepted_prop.get("team_id"):
+            target["team_id"] = accepted_prop.get("team_id")
+            storage.save_milestones(all_milestones)
+
+    completed = storage.complete_milestone(milestone_id)
+    if completed is None:
+        updated_milestone = target
+    else:
+        updated_milestone = completed
+
+    task_milestones = [m for m in storage.load_milestones() if m.get("task_id") == task_id]
+    completed_count = sum(1 for m in task_milestones if m.get("status") == "completed")
+    total_count = len(task_milestones)
+    percentage = int(round((completed_count / total_count) * 100)) if total_count > 0 else 0
+    earned_xp = sum(m.get("points", 0) for m in task_milestones if m.get("status") == "completed")
+    total_xp = sum(m.get("points", 0) for m in task_milestones)
+    potential_xp = total_xp - earned_xp
+
+    return JSONResponse({
+        "status": "ok",
+        "task_id": task_id,
+        "milestone": updated_milestone,
+        "awarded_xp": updated_milestone.get("points", 0),
+        "progress": {
+            "completed_count": completed_count,
+            "total_count": total_count,
+            "percentage": percentage,
+            "earned_xp": earned_xp,
+            "total_xp": total_xp,
+            "potential_xp": potential_xp
+        }
+    })
+
+
+@app.post("/api/proposals/{proposal_id}/status")
+async def proposal_status_endpoint(proposal_id: str, payload: ProposalStatusRequest):
+    updated = storage.update_proposal_status(proposal_id, payload.status, payload.comment or "")
+    if not updated:
+        return JSONResponse({"status": "error", "message": "Отклик не найден"}, status_code=404)
+
+    if payload.status == "accepted":
+        task_id = updated.get("task_id")
+        team_id = updated.get("team_id")
+        if task_id and team_id:
+            milestones = storage.load_milestones()
+            changed = False
+            for m in milestones:
+                if m.get("task_id") == task_id and not m.get("team_id"):
+                    m["team_id"] = team_id
+                    changed = True
+            if changed:
+                storage.save_milestones(milestones)
+
+    return JSONResponse({
+        "status": "ok",
+        "proposal": updated
+    })
 
 
 @app.api_route("/jury-demo", methods=["GET", "HEAD"], response_class=HTMLResponse)
