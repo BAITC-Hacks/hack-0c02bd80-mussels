@@ -17,7 +17,13 @@ from services import (
     get_improvement_suggestions,
     calculate_recommendation_score,
     Storage,
-    AIGenerator
+    AIGenerator,
+    get_gauge_color_scheme,
+    render_circular_gauge,
+    render_milestone_progress,
+    render_xp_award_card,
+    render_xp_pending_card,
+    render_xp_summary
 )
 
 # Page configuration
@@ -27,26 +33,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for clean, professional look (Strictly NO EMOJIS)
+# Custom CSS for crisp white theme, professional typography (Strictly NO EMOJIS)
 st.markdown("""
 <style>
+    /* Clean white theme foundation */
+    .stApp {
+        background-color: #ffffff;
+        color: #0f172a;
+    }
+    header[data-testid="stHeader"] {
+        background-color: #ffffff;
+    }
+    section[data-testid="stSidebar"] {
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+    }
+    /* Typography & Hierarchy */
     .main-title {
         font-size: 2.1rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #0f172a;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.5px;
     }
     .subtitle {
         font-size: 1.05rem;
         color: #475569;
         margin-bottom: 1.5rem;
+        line-height: 1.5;
     }
+    /* Badges */
     .badge {
         display: inline-block;
         padding: 4px 10px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border-radius: 4px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 6px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -70,26 +92,36 @@ st.markdown("""
         color: #b91c1c;
         border: 1px solid #fca5a5;
     }
+    /* Card Containers */
+    .task-card-box {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .task-card-box:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 10px -2px rgba(0,0,0,0.06);
+    }
+    .recommendation-banner {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 4px solid #10b981;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 6px;
+        color: #15803d;
+        font-size: 0.9rem;
+    }
     .score-card {
-        background-color: #f8fafc;
+        background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 16px;
-    }
-    .recommendation-banner {
-        background-color: #f0fdf4;
-        border-left: 4px solid #22c55e;
-        padding: 12px;
-        margin-bottom: 12px;
-        border-radius: 0 6px 6px 0;
-    }
-    .task-card-box {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -302,18 +334,27 @@ if menu == "1. Конструктор задачи (Бизнес)":
             card["rating_breakdown"] = c_breakdown
             card["missing_fields"] = c_missing
 
-            # Top rating banner
+            # Top rating banner with dynamic circular SVG speedometer
             col_r1, col_r2 = st.columns([1, 2])
             with col_r1:
-                st.metric("Текущий рейтинг готовности:", f"{c_score} / 100 баллов")
-                st.markdown(f"Уровень: **{c_level_info['level']}** — {c_level_info['description']}")
+                gauge_html = render_circular_gauge(c_score, size=150, title="Рейтинг готовности")
+                st.markdown(gauge_html, unsafe_allow_html=True)
             with col_r2:
-                st.markdown("**Что дает баллы сейчас:**")
+                st.markdown("<div style='font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:10px;'>Факторы начисления баллов:</div>", unsafe_allow_html=True)
                 breakdown_cols = st.columns(4)
                 idx = 0
                 for f_key, pts in c_breakdown.items():
                     col_idx = idx % 4
-                    breakdown_cols[col_idx].caption(f"{SCORING_WEIGHTS[f_key]['title']}: **{pts} б.**")
+                    max_pts = SCORING_WEIGHTS[f_key]["max_points"]
+                    is_full = pts == max_pts
+                    val_color = "#15803d" if is_full else ("#b45309" if pts > 0 else "#64748b")
+                    breakdown_cols[col_idx].markdown(
+                        f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.02);'>"
+                        f"<div style='font-size:0.75rem; color:#64748b; font-weight:600;'>{SCORING_WEIGHTS[f_key]['title']}</div>"
+                        f"<div style='font-size:1.1rem; font-weight:800; color:{val_color}; margin-top:2px;'>{pts} <span style='font-size:0.75rem; font-weight:500; color:#94a3b8;'>/ {max_pts}</span></div>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
                     idx += 1
 
             st.markdown("---")
@@ -416,18 +457,32 @@ elif menu == "2. Общий каталог задач":
     st.markdown(f"Всего задач в каталоге: **{len(filtered_tasks)}** (отсортированы по убыванию рейтинга)")
 
     for task in filtered_tasks:
-        badge_cls = f"badge-{task.get('readiness_level', 'draft').lower()}"
+        task_rating = task.get("rating", 0)
+        gauge_svg = render_circular_gauge(task_rating, size=58, compact=True)
+        colors = get_gauge_color_scheme(task_rating)
+        level_name = task.get("readiness_level", colors["level"])
+
         with st.container():
             st.markdown(f"""
             <div class='task-card-box'>
-                <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>
-                    <h3 style='margin:0; color:#1e293b;'>{task.get('title')}</h3>
-                    <span class='badge {badge_cls}'>{task.get('readiness_level')} | {task.get('rating')} баллов</span>
+                <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:10px;'>
+                    <div style='flex:1;'>
+                        <h3 style='margin:0 0 6px 0; color:#0f172a; font-size:1.25rem; font-weight:700;'>{task.get('title')}</h3>
+                        <p style='color:#64748b; font-size:0.85rem; margin:0 0 10px 0;'>
+                            Отрасль: <b style='color:#334155;'>{task.get('industry')}</b> | Направление: <b style='color:#334155;'>{task.get('task_type')}</b>
+                        </p>
+                    </div>
+                    <div style='display:flex; align-items:center; gap:12px;'>
+                        <div style='text-align:right;'>
+                            <span style='display:inline-block; padding:4px 10px; background:{colors["badge_bg"]}; color:{colors["badge_text"]}; border:1px solid {colors["badge_border"]}; border-radius:6px; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;'>
+                                {level_name}
+                            </span>
+                            <div style='font-size:0.75rem; color:#64748b; margin-top:3px;'>Рейтинг готовности</div>
+                        </div>
+                        {gauge_svg}
+                    </div>
                 </div>
-                <p style='color:#64748b; font-size:0.9rem; margin-bottom:12px;'>
-                    Отрасль: <b>{task.get('industry')}</b> | Направление: <b>{task.get('task_type')}</b>
-                </p>
-                <p><b>Контекст и потребность:</b> {task.get('context_need')}</p>
+                <p style='color:#334155; font-size:0.95rem; line-height:1.5; margin:0;'><b>Контекст и потребность:</b> {task.get('context_need')}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -469,6 +524,42 @@ elif menu == "3. Кабинет студенческой команды":
     with col_tp3:
         st.caption("Регламент: система может рекомендовать задачи по интересам, но не ограничивает каталог и не назначает команды автоматически.")
 
+    # Load all milestones for this team and task titles
+    all_stored_milestones = storage.load_milestones()
+    all_tasks_dict = {task_item["id"]: task_item["title"] for task_item in storage.load_tasks()}
+    team_milestones = [m for m in all_stored_milestones if m.get("team_id") == team["id"]]
+
+    # XP summary statistics
+    st.markdown(render_xp_summary(team, team_milestones), unsafe_allow_html=True)
+
+    # XP Cards Accordion/List
+    with st.expander("Карточки начисления баллов прогресса (XP)", expanded=True):
+        completed_m = [m for m in team_milestones if m.get("status") == "completed"]
+        in_progress_m = [m for m in team_milestones if m.get("status") != "completed"]
+
+        if not team_milestones:
+            st.markdown(
+                """
+                <div style='background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; padding:16px; color:#64748b; font-size:0.9rem;'>
+                    У выбранной команды пока нет зафиксированных контрольных этапов. 
+                    После того как представитель бизнеса примет ваше предложение и подтвердит выполнение контрольного этапа, здесь появятся именные карточки начисления XP.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            if completed_m:
+                st.markdown("<div style='font-size:0.85rem; font-weight:700; color:#15803d; text-transform:uppercase; margin-bottom:8px;'>Подтвержденные начисления:</div>", unsafe_allow_html=True)
+                for cm in completed_m:
+                    task_name = all_tasks_dict.get(cm.get("task_id"), "Бизнес-задача")
+                    st.markdown(render_xp_award_card(cm, task_name), unsafe_allow_html=True)
+            
+            if in_progress_m:
+                st.markdown("<div style='font-size:0.85rem; font-weight:700; color:#2563eb; text-transform:uppercase; margin-top:12px; margin-bottom:8px;'>Этапы в процессе выполнения:</div>", unsafe_allow_html=True)
+                for ipm in in_progress_m:
+                    task_name = all_tasks_dict.get(ipm.get("task_id"), "Бизнес-задача")
+                    st.markdown(render_xp_pending_card(ipm, task_name), unsafe_allow_html=True)
+
     st.markdown("---")
     st.subheader("Рекомендованные задачи для вашей команды")
 
@@ -487,19 +578,27 @@ elif menu == "3. Кабинет студенческой команды":
         t = item["task"]
         rec_score = item["rec_score"]
         rec_exp = item["rec_explanation"]
+        t_rating = t.get("rating", 0)
+        gauge_svg = render_circular_gauge(t_rating, size=52, compact=True)
+        colors = get_gauge_color_scheme(t_rating)
+        level_name = t.get("readiness_level", colors["level"])
 
-        badge_cls = f"badge-{t.get('readiness_level', 'draft').lower()}"
         with st.container():
             st.markdown(f"""
             <div class='recommendation-banner'>
                 <b>{rec_exp}</b>
             </div>
             <div class='task-card-box'>
-                <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>
-                    <h4 style='margin:0;'>{t.get('title')}</h4>
-                    <span class='badge {badge_cls}'>{t.get('readiness_level')} | {t.get('rating')} б.</span>
+                <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;'>
+                    <div>
+                        <h4 style='margin:0 0 4px 0; color:#0f172a;'>{t.get('title')}</h4>
+                        <span style='display:inline-block; padding:3px 8px; background:{colors["badge_bg"]}; color:{colors["badge_text"]}; border:1px solid {colors["badge_border"]}; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase;'>
+                            {level_name}
+                        </span>
+                    </div>
+                    {gauge_svg}
                 </div>
-                <p style='color:#475569; font-size:0.9rem;'>{t.get('context_need')}</p>
+                <p style='color:#475569; font-size:0.9rem; margin:0;'>{t.get('context_need')}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -612,23 +711,60 @@ elif menu == "4. Отклики и решения бизнеса":
     st.subheader("Шаг 8: Контрольные этапы и начисление баллов прогресса")
     st.caption("После подтверждения этапа выбранная команда получает баллы за фактический прогресс (XP).")
 
-    all_milestones = storage.get_milestones_for_task_team(selected_task_id, task_proposals[0]["team_id"]) if task_proposals else []
+    # Find accepted proposal or fallback to first proposal
+    accepted_prop = next((p for p in task_proposals if p.get("status") == "accepted"), None)
+    active_team_name = ""
+    active_team_id = ""
+    if accepted_prop:
+        active_team_id = accepted_prop["team_id"]
+        active_team_name = accepted_prop["team_name"]
+    elif task_proposals:
+        active_team_id = task_proposals[0]["team_id"]
+        active_team_name = task_proposals[0]["team_name"]
+
+    all_milestones = storage.get_milestones_for_task_team(selected_task_id, active_team_id) if active_team_id else []
     if not all_milestones:
         # Load general milestones for task
         all_milestones = [m for m in storage.load_milestones() if m.get("task_id") == selected_task_id]
 
     if all_milestones:
+        # Interactive Milestone Progress Visualizer (percentage, bar, steps)
+        st.markdown(render_milestone_progress(all_milestones, team_name=active_team_name), unsafe_allow_html=True)
+
+        st.markdown("<div style='font-size:0.95rem; font-weight:700; color:#0f172a; margin-top:14px; margin-bottom:10px;'>Контрольные точки и подтверждение выполнения:</div>", unsafe_allow_html=True)
         for m in all_milestones:
-            col_m1, col_m2 = st.columns([3, 1])
-            with col_m1:
-                status_label = "Подтвержден" if m["status"] == "completed" else "В работе"
-                st.markdown(f"- **{m['title']}** (+{m['points']} XP) — *{status_label}*")
-            with col_m2:
-                if m["status"] != "completed":
-                    if st.button(f"Подтвердить этап (+{m['points']} XP)", key=f"m_btn_{m['id']}"):
+            is_completed = m.get("status") == "completed"
+            border_color = "#86efac" if is_completed else "#cbd5e1"
+            status_text = "Подтвержден бизнесом" if is_completed else "В процессе выполнения"
+            status_color = "#15803d" if is_completed else "#2563eb"
+            status_bg = "#dcfce7" if is_completed else "#eff6ff"
+            date_info = f" | {m.get('completed_at', '')[:16].replace('T', ' ')}" if is_completed and m.get("completed_at") else ""
+
+            col_card, col_action = st.columns([3, 1])
+            with col_card:
+                st.markdown(f"""
+                <div style="background:#ffffff; border:1px solid {border_color}; border-left:4px solid {status_color}; border-radius:8px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">{m['title']}</div>
+                        <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">
+                            Статус: <b style="color:{status_color};">{status_text}</b>{date_info}
+                        </div>
+                    </div>
+                    <div>
+                        <span style="display:inline-block; padding:4px 10px; background:{status_bg}; color:{status_color}; border-radius:6px; font-size:0.85rem; font-weight:800;">
+                            +{m['points']} XP
+                        </span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_action:
+                if not is_completed:
+                    if st.button(f"Подтвердить этап (+{m['points']} XP)", key=f"m_btn_{m['id']}", type="primary"):
                         storage.complete_milestone(m["id"])
                         st.success(f"Этап подтвержден! Команде начислено +{m['points']} XP.")
                         st.rerun()
+                else:
+                    st.caption("Баллы начислены")
     else:
         st.info("Контрольные этапы будут доступны после выбора команды.")
 

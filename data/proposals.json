@@ -1,0 +1,67 @@
+[
+  {
+    "id": "prop-001",
+    "task_id": "task-001",
+    "team_id": "team-001",
+    "team_name": "NeuralMinds",
+    "solution_idea": "Разработка гибридного RAG-бота на базе FastAPI и векторной базы Qdrant с классификацией интентов и бесшовным переводом на оператора.",
+    "plan": "1 неделя: парсинг FAQ и векторизация. 2 неделя: интеграция Telegram бота и API интернет-магазина. 3 неделя: веб-виджет и тестирование сценариев возврата. 4 неделя: контейнеризация и нагрузочное тестирование.",
+    "timeline": "4 недели",
+    "prototype_url": "https://github.com/neuralminds/support-ai-prototype",
+    "status": "accepted",
+    "submitted_at": "2026-09-20T16:00:00",
+    "review_comment": "Сильный план реализации и релевантный стек. Команда выбрана для дальнейшей работы."
+  },
+  {
+    "id": "prop-002",
+    "task_id": "task-001",
+    "team_id": "team-003",
+    "team_name": "EdTech Innovators",
+    "solution_idea": "Создание веб-чата на React с бэкендом на Django и интеграцией открытых LLM для ответов на частые вопросы.",
+    "plan": "2 недели дизайн и верстка интерфейса, 2 недели настройка prompt engineering и тестирование.",
+    "timeline": "4 недели",
+    "prototype_url": "https://github.com/edtech-innovators/chat-client",
+    "status": "pending",
+    "submitted_at": "2026-09-21T11:00:00",
+    "review_comment": ""
+  },
+  {
+    "id": "prop-003",
+    "task_id": "task-002",
+    "team_id": "team-002",
+    "team_name": "DataCrafters",
+    "solution_idea": "Построение ансамбля CatBoost с генерацией признаков кредитного поведения и интерпретацией через SHAP-значения для кредитных аналитиков.",
+    "plan": "1 неделя EDA и предобработка Parquet данных. 2 неделя обучение моделей и тюнинг гиперпараметров. 3 неделя FastAPI сервис. 4 неделя валидация.",
+    "timeline": "4 недели",
+    "prototype_url": "https://github.com/datacrafters/scoring-pipeline",
+    "status": "accepted",
+    "submitted_at": "2026-09-21T12:30:00",
+    "review_comment": "Отличная проработка метрик качества и учет интерпретируемости модели."
+  },
+  {
+    "id": "prop-004",
+    "task_id": "task-003",
+    "team_id": "team-003",
+    "team_name": "EdTech Innovators",
+    "solution_idea": "Дашборд на Streamlit с визуализацией динамики активности студентов и алертами в Telegram кураторам.",
+    "plan": "1 неделя анализ логов LMS, 2 неделя разработка дашборда и интеграция уведомлений.",
+    "timeline": "3 недели",
+    "prototype_url": "https://github.com/edtech-innovators/student-retention-dashboard",
+    "status": "pending",
+    "submitted_at": "2026-09-22T09:45:00",
+    "review_comment": ""
+  },
+  {
+    "id": "prop-005",
+    "task_id": "task-004",
+    "team_id": "team-004",
+    "team_name": "RouteMasters",
+    "solution_idea": "Реализация эвристического VRP-алгоритма на Python/Go с учетом дорожной обстановки и минимизацией совокупного времени в пути.",
+    "plan": "1 неделя обработка GPS треков, 2 неделя алгоритм оптимизации маршрутов, 3-4 неделя API диспетчера.",
+    "timeline": "4 недели",
+    "prototype_url": "https://github.com/routemasters/delivery-optimizer",
+    "status": "pending",
+    "submitted_at": "2026-09-22T14:10:00",
+    "review_comment": ""
+  }
+]

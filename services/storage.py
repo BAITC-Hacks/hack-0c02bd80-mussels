@@ -172,5 +172,15 @@ class Storage:
                 break
         if target:
             self.save_milestones(milestones)
-            self.add_team_points(target["team_id"], target.get("points", 25))
+            teams = self.load_teams()
+            for team in teams:
+                if team.get("id") == target["team_id"]:
+                    team["progress_points"] = team.get("progress_points", 0) + target.get("points", 25)
+                    cm = team.get("completed_milestones", [])
+                    if target["id"] not in cm:
+                        cm.append(target["id"])
+                    team["completed_milestones"] = cm
+                    break
+            self.save_teams(teams)
         return target
+
