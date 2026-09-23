@@ -26,7 +26,9 @@ from services import (
     render_xp_award_card,
     render_xp_pending_card,
     render_xp_summary,
-    render_prototype_switcher
+    render_prototype_switcher,
+    get_variant_css,
+    render_variant_showcase
 )
 
 # Page configuration
@@ -36,56 +38,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Read active UI design variant from URL (?variant=A, B, or C)
-current_variant = st.query_params.get("variant", "A").upper()
-if current_variant not in ["A", "B", "C"]:
-    current_variant = "A"
+# Read active UI design variant from session state or query params (?variant=A, B, or C)
+if "variant" not in st.session_state:
+    st.session_state["variant"] = st.query_params.get("variant", "A").upper()
+if st.session_state["variant"] not in ["A", "B", "C"]:
+    st.session_state["variant"] = "A"
 
+# Also sync if query params changed in URL
+url_v = st.query_params.get("variant")
+if url_v and url_v.upper() in ["A", "B", "C"] and url_v.upper() != st.session_state["variant"]:
+    st.session_state["variant"] = url_v.upper()
+
+current_variant = st.session_state["variant"]
 variant_cfg = VARIANT_CONFIGS[current_variant]
 
-# Custom CSS for the active design variant (Strictly NO EMOJIS)
-if current_variant == "B":
-    st.markdown("""
-    <style>
-        .stApp { background-color: #fafafa; color: #18181b; }
-        header[data-testid="stHeader"] { background-color: #fafafa; }
-        section[data-testid="stSidebar"] { background-color: #f4f4f5; border-right: 1px solid #e4e4e7; }
-        .main-title { font-size: 2.0rem; font-weight: 700; color: #18181b; margin-bottom: 0.2rem; letter-spacing: -0.5px; }
-        .subtitle { font-size: 1.0rem; color: #71717a; margin-bottom: 1.4rem; }
-        .task-card-box { background-color: #ffffff; border: 1px solid #e4e4e7; border-left: 4px solid #71717a; border-radius: 4px; padding: 18px 20px; margin-bottom: 16px; box-shadow: none; transition: border-color 0.2s ease; }
-        .task-card-box:hover { border-color: #a1a1aa; border-left-color: #18181b; }
-        .recommendation-banner { background-color: #f4f4f5; border: 1px solid #e4e4e7; border-left: 4px solid #047857; padding: 10px 14px; margin-bottom: 10px; border-radius: 4px; color: #047857; font-size: 0.9rem; }
-        .score-card { background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 4px; padding: 14px; margin-bottom: 14px; }
-    </style>
-    """, unsafe_allow_html=True)
-elif current_variant == "C":
-    st.markdown("""
-    <style>
-        .stApp { background-color: #ffffff; color: #09090b; }
-        header[data-testid="stHeader"] { background-color: #ffffff; }
-        section[data-testid="stSidebar"] { background-color: #f8fafc; border-right: 2px solid #0f172a; }
-        .main-title { font-size: 2.2rem; font-weight: 900; color: #09090b; margin-bottom: 0.25rem; letter-spacing: -1px; }
-        .subtitle { font-size: 1.05rem; color: #334155; margin-bottom: 1.5rem; }
-        .task-card-box { background-color: #ffffff; border: 2px solid #0f172a; border-radius: 8px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .task-card-box:hover { box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.14); }
-        .recommendation-banner { background-color: #0f172a; border: 1px solid #1e293b; padding: 12px 16px; margin-bottom: 12px; border-radius: 6px; color: #f8fafc; font-size: 0.9rem; }
-        .score-card { background-color: #ffffff; border: 2px solid #0f172a; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <style>
-        .stApp { background-color: #ffffff; color: #0f172a; }
-        header[data-testid="stHeader"] { background-color: #ffffff; }
-        section[data-testid="stSidebar"] { background-color: #f8fafc; border-right: 1px solid #e2e8f0; }
-        .main-title { font-size: 2.1rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; letter-spacing: -0.5px; }
-        .subtitle { font-size: 1.05rem; color: #475569; margin-bottom: 1.5rem; line-height: 1.5; }
-        .task-card-box { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .task-card-box:hover { border-color: #cbd5e1; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.06); }
-        .recommendation-banner { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981; padding: 12px 16px; margin-bottom: 12px; border-radius: 6px; color: #15803d; font-size: 0.9rem; }
-        .score-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    </style>
-    """, unsafe_allow_html=True)
+# Inject high-specificity CSS for active design variant (Strictly NO EMOJIS)
+st.markdown(get_variant_css(current_variant), unsafe_allow_html=True)
 
 # Initialize storage and AI engine
 @st.cache_resource
@@ -127,16 +95,23 @@ menu = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("Прототип дизайна (UI / Цвета)")
-selected_variant = st.sidebar.radio(
-    "Вариант стиля UI:",
-    options=["A", "B", "C"],
-    index=["A", "B", "C"].index(current_variant),
-    format_func=lambda x: f"{x}: {VARIANT_CONFIGS[x]['name']}"
-)
-if selected_variant != current_variant:
-    st.query_params["variant"] = selected_variant
-    st.rerun()
+st.sidebar.subheader("Дизайн-система (UI / Стиль)")
+sb_c1, sb_c2, sb_c3 = st.sidebar.columns(3)
+with sb_c1:
+    if st.sidebar.button("A: Fintech", type="primary" if current_variant == "A" else "secondary", use_container_width=True, key="sb_btn_a"):
+        st.session_state["variant"] = "A"
+        st.query_params["variant"] = "A"
+        st.rerun()
+with sb_c2:
+    if st.sidebar.button("B: Бумага", type="primary" if current_variant == "B" else "secondary", use_container_width=True, key="sb_btn_b"):
+        st.session_state["variant"] = "B"
+        st.query_params["variant"] = "B"
+        st.rerun()
+with sb_c3:
+    if st.sidebar.button("C: HUD", type="primary" if current_variant == "C" else "secondary", use_container_width=True, key="sb_btn_c"):
+        st.session_state["variant"] = "C"
+        st.query_params["variant"] = "C"
+        st.rerun()
 
 st.sidebar.caption(f"**{variant_cfg['full_name']}**")
 st.sidebar.caption(variant_cfg["tagline"])
@@ -154,6 +129,32 @@ if st.sidebar.button("Сбросить все данные к исходным")
     st.session_state.active_card = None
     st.sidebar.success("Данные успешно сброшены к начальным 5 черновикам, карточкам и командам.")
     st.rerun()
+
+
+# ==========================================
+# PROTOTYPE DESIGN SYSTEM SWITCHER & SHOWCASE
+# ==========================================
+st.markdown("### Выбор дизайн-системы (Интерактивный прототип стиля)")
+top_c1, top_c2, top_c3 = st.columns(3)
+with top_c1:
+    if st.button("Вариант A: Modern Fintech (Indigo / Soft)", type="primary" if current_variant == "A" else "secondary", use_container_width=True, key="top_v_a"):
+        st.session_state["variant"] = "A"
+        st.query_params["variant"] = "A"
+        st.rerun()
+with top_c2:
+    if st.button("Вариант B: Скандинавская Бумага (Warm Paper / Serif)", type="primary" if current_variant == "B" else "secondary", use_container_width=True, key="top_v_b"):
+        st.session_state["variant"] = "B"
+        st.query_params["variant"] = "B"
+        st.rerun()
+with top_c3:
+    if st.button("Вариант C: Швейцарский HUD (High-Contrast / Black)", type="primary" if current_variant == "C" else "secondary", use_container_width=True, key="top_v_c"):
+        st.session_state["variant"] = "C"
+        st.query_params["variant"] = "C"
+        st.rerun()
+
+st.markdown(render_variant_showcase(current_variant), unsafe_allow_html=True)
+st.markdown("---")
+
 
 
 # ==========================================

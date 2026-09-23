@@ -14,14 +14,16 @@ import math
 VARIANT_CONFIGS: Dict[str, Dict[str, Any]] = {
     "A": {
         "code": "A",
-        "name": "Executive Clean",
-        "full_name": "Executive Clean (Slate & Sapphire)",
-        "tagline": "Сбалансированный enterprise-стиль с мягкими карточками и плавными дуговыми спидометрами",
-        "app_bg": "#ffffff",
+        "name": "Modern Fintech SaaS",
+        "full_name": "Modern Fintech (Slate & Electric Indigo)",
+        "tagline": "Высокотехнологичный enterprise-стиль: плавные тени, округлые формы 12px, акцентный индиго и чистый белый холст",
+        "app_bg": "#f8fafc",
+        "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
         "card_border": "#e2e8f0",
-        "card_radius": "10px",
-        "card_shadow": "0 1px 3px rgba(0,0,0,0.03)",
+        "card_radius": "12px",
+        "card_shadow": "0 4px 20px -2px rgba(15, 23, 42, 0.05)",
+        "accent": "#4f46e5",
         "text_primary": "#0f172a",
         "text_secondary": "#475569",
         "colors": {
@@ -81,16 +83,18 @@ VARIANT_CONFIGS: Dict[str, Dict[str, Any]] = {
     },
     "B": {
         "code": "B",
-        "name": "Nordic Minimal",
-        "full_name": "Nordic Minimal (Graphite & Forest Sage)",
-        "tagline": "Скандинавский лаконичный минимализм с тонкими линиями, нейтральным фоном и высокой плотностью",
-        "app_bg": "#fafafa",
+        "name": "Скандинавская Бумага",
+        "full_name": "Скандинавская Бумага (Warm Editorial & Forest Pine)",
+        "tagline": "Теплый редакционный стиль: благородная бумага слоновой кости, антиквенные заголовки с засечками и хвойный акцент",
+        "app_bg": "#f5f2eb",
+        "sidebar_bg": "#ebe6dc",
         "card_bg": "#ffffff",
-        "card_border": "#e4e4e7",
-        "card_radius": "4px",
-        "card_shadow": "none",
-        "text_primary": "#18181b",
-        "text_secondary": "#71717a",
+        "card_border": "#ddd6c8",
+        "card_radius": "6px",
+        "card_shadow": "0 2px 10px rgba(30, 58, 43, 0.05)",
+        "accent": "#1e3a2b",
+        "text_primary": "#262624",
+        "text_secondary": "#57534e",
         "colors": {
             "priority": {
                 "level": "Приоритетная",
@@ -148,67 +152,69 @@ VARIANT_CONFIGS: Dict[str, Dict[str, Any]] = {
     },
     "C": {
         "code": "C",
-        "name": "Swiss Enterprise HUD",
-        "full_name": "Swiss Enterprise HUD (High-Contrast Cobalt)",
-        "tagline": "Контрастный швейцарский HUD: глубокие темные чипы, четкие границы и цифровая телеметрия",
+        "name": "Швейцарский Neo-Brutalist HUD",
+        "full_name": "Швейцарский HUD (High-Contrast & Jet Black)",
+        "tagline": "Бескомпромиссная геометрия: четкие черные рамки 2.5px, жесткие тени 6px, плотный монохром и неоновые индикаторы",
         "app_bg": "#ffffff",
+        "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
-        "card_border": "#0f172a",
-        "card_radius": "6px",
-        "card_shadow": "0 2px 4px rgba(15, 23, 42, 0.08)",
-        "text_primary": "#09090b",
-        "text_secondary": "#334155",
+        "card_border": "#000000",
+        "card_radius": "2px",
+        "card_shadow": "6px 6px 0px #000000",
+        "accent": "#000000",
+        "text_primary": "#000000",
+        "text_secondary": "#18181b",
         "colors": {
             "priority": {
                 "level": "Приоритетная",
                 "primary": "#10b981",
                 "secondary": "#059669",
-                "track": "#064e3b",
-                "bg": "#ecfdf5",
-                "border": "#10b981",
-                "text": "#064e3b",
-                "badge_bg": "#064e3b",
-                "badge_text": "#ecfdf5",
-                "badge_border": "#10b981",
+                "track": "#000000",
+                "bg": "#ffffff",
+                "border": "#000000",
+                "text": "#000000",
+                "badge_bg": "#000000",
+                "badge_text": "#34d399",
+                "badge_border": "#000000",
                 "description": "Полная готовность к реализации"
             },
             "ready": {
                 "level": "Готовая",
-                "primary": "#3b82f6",
+                "primary": "#2563eb",
                 "secondary": "#1d4ed8",
-                "track": "#1e3a8a",
-                "bg": "#eff6ff",
-                "border": "#3b82f6",
-                "text": "#1e3a8a",
-                "badge_bg": "#1e3a8a",
-                "badge_text": "#eff6ff",
-                "badge_border": "#3b82f6",
+                "track": "#000000",
+                "bg": "#ffffff",
+                "border": "#000000",
+                "text": "#000000",
+                "badge_bg": "#000000",
+                "badge_text": "#60a5fa",
+                "badge_border": "#000000",
                 "description": "Высокая степень проработки"
             },
             "workable": {
                 "level": "Рабочая",
                 "primary": "#f59e0b",
                 "secondary": "#d97706",
-                "track": "#78350f",
-                "bg": "#fffbeb",
-                "border": "#f59e0b",
-                "text": "#78350f",
-                "badge_bg": "#78350f",
-                "badge_text": "#fef3c7",
-                "badge_border": "#f59e0b",
+                "track": "#000000",
+                "bg": "#ffffff",
+                "border": "#000000",
+                "text": "#000000",
+                "badge_bg": "#000000",
+                "badge_text": "#fbbf24",
+                "badge_border": "#000000",
                 "description": "Базовые требования указаны"
             },
             "draft": {
                 "level": "Черновик",
                 "primary": "#ef4444",
                 "secondary": "#b91c1c",
-                "track": "#7f1d1d",
-                "bg": "#fef2f2",
-                "border": "#ef4444",
-                "text": "#7f1d1d",
-                "badge_bg": "#7f1d1d",
-                "badge_text": "#fee2e2",
-                "badge_border": "#ef4444",
+                "track": "#000000",
+                "bg": "#ffffff",
+                "border": "#000000",
+                "text": "#000000",
+                "badge_bg": "#000000",
+                "badge_text": "#f87171",
+                "badge_border": "#000000",
                 "description": "Требует детализации"
             }
         }
@@ -680,6 +686,378 @@ def render_xp_summary(team: Dict[str, Any], milestones: List[Dict[str, Any]], va
             <div style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase;">Этапов в работе</div>
             <div style="font-size:1.6rem; font-weight:900; color:#0f172a; margin-top:4px;">{pending_milestones}</div>
             <div style="font-size:0.75rem; color:#2563eb; margin-top:2px;">Потенциал: +{potential_xp} XP</div>
+        </div>
+    </div>
+    """.strip()
+
+
+def get_variant_css(variant: str = "A") -> str:
+    """
+    Returns high-specificity CSS for the active design variant.
+    Injects custom styles for the entire Streamlit canvas, typography, buttons, tabs, and cards.
+    Strictly NO emojis.
+    """
+    v = variant.upper() if variant.upper() in ["A", "B", "C"] else "A"
+
+    if v == "B":
+        # Warm Scandinavian Editorial Paper (Ivory / Forest Pine / Serif)
+        return """
+        <style>
+            /* Canvas & App Shell */
+            [data-testid="stAppViewContainer"], .stApp {
+                background-color: #f5f2eb !important;
+                color: #262624 !important;
+            }
+            header[data-testid="stHeader"] {
+                background-color: #f5f2eb !important;
+                border-bottom: 1px solid #ddd6c8 !important;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: #ece7de !important;
+                border-right: 1px solid #ddd6c8 !important;
+            }
+
+            /* Typography */
+            h1, h2, h3, .main-title {
+                font-family: Georgia, "Newsreader", "Playfair Display", "Times New Roman", serif !important;
+                font-weight: 700 !important;
+                color: #1e3a2b !important;
+                letter-spacing: -0.2px !important;
+            }
+            .subtitle {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+                font-size: 1.05rem !important;
+                color: #57534e !important;
+                margin-bottom: 1.2rem !important;
+            }
+
+            /* Cards */
+            .task-card-box {
+                background-color: #ffffff !important;
+                border: 1px solid #ddd6c8 !important;
+                border-left: 5px solid #1e3a2b !important;
+                border-radius: 6px !important;
+                padding: 22px !important;
+                margin-bottom: 18px !important;
+                box-shadow: 0 2px 10px rgba(30, 58, 43, 0.05) !important;
+            }
+            .task-card-box:hover {
+                border-color: #b5ac9d !important;
+                border-left-color: #14281e !important;
+            }
+            .score-card {
+                background-color: #ffffff !important;
+                border: 1px solid #ddd6c8 !important;
+                border-radius: 6px !important;
+                padding: 16px !important;
+                box-shadow: 0 1px 4px rgba(30, 58, 43, 0.04) !important;
+            }
+            .recommendation-banner {
+                background-color: #f0fdf4 !important;
+                border: 1px solid #bbf7d0 !important;
+                border-left: 5px solid #047857 !important;
+                padding: 12px 16px !important;
+                margin-bottom: 14px !important;
+                border-radius: 6px !important;
+                color: #064e3b !important;
+                font-size: 0.92rem !important;
+            }
+
+            /* Streamlit Native Buttons */
+            .stButton > button {
+                background-color: #1e3a2b !important;
+                color: #fdfcf7 !important;
+                border-radius: 6px !important;
+                border: 1px solid #14281e !important;
+                font-family: Georgia, serif !important;
+                font-weight: 600 !important;
+                box-shadow: 0 2px 4px rgba(30, 58, 43, 0.15) !important;
+                transition: all 0.2s ease !important;
+            }
+            .stButton > button:hover {
+                background-color: #284e3a !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 8px rgba(30, 58, 43, 0.25) !important;
+                transform: translateY(-1px) !important;
+            }
+
+            /* Streamlit Tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                background-color: transparent !important;
+                border-bottom: 2px solid #ddd6c8 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                font-family: Georgia, serif !important;
+                font-size: 0.95rem !important;
+                color: #78716c !important;
+            }
+            .stTabs [data-baseweb="tab"][aria-selected="true"] {
+                color: #1e3a2b !important;
+                border-bottom: 3px solid #1e3a2b !important;
+                font-weight: 700 !important;
+            }
+        </style>
+        """
+    elif v == "C":
+        # Swiss Neo-Brutalist HUD (High-Contrast & Jet Black)
+        return """
+        <style>
+            /* Canvas & App Shell */
+            [data-testid="stAppViewContainer"], .stApp {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-family: "Space Grotesk", -apple-system, "SF Pro Display", sans-serif !important;
+            }
+            header[data-testid="stHeader"] {
+                background-color: #ffffff !important;
+                border-bottom: 3px solid #000000 !important;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: #ffffff !important;
+                border-right: 3px solid #000000 !important;
+            }
+
+            /* Typography */
+            h1, h2, h3, .main-title {
+                font-weight: 900 !important;
+                color: #000000 !important;
+                text-transform: uppercase !important;
+                letter-spacing: -0.5px !important;
+            }
+            .subtitle {
+                font-size: 1.05rem !important;
+                color: #000000 !important;
+                font-weight: 600 !important;
+                margin-bottom: 1.4rem !important;
+            }
+
+            /* Cards */
+            .task-card-box {
+                background-color: #ffffff !important;
+                border: 2.5px solid #000000 !important;
+                border-radius: 2px !important;
+                padding: 22px !important;
+                margin-bottom: 22px !important;
+                box-shadow: 6px 6px 0px #000000 !important;
+                transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+            }
+            .task-card-box:hover {
+                transform: translate(-2px, -2px) !important;
+                box-shadow: 8px 8px 0px #000000 !important;
+            }
+            .score-card {
+                background-color: #ffffff !important;
+                border: 2px solid #000000 !important;
+                border-radius: 2px !important;
+                padding: 16px !important;
+                box-shadow: 4px 4px 0px #000000 !important;
+            }
+            .recommendation-banner {
+                background-color: #000000 !important;
+                border: 2px solid #000000 !important;
+                padding: 12px 18px !important;
+                margin-bottom: 14px !important;
+                border-radius: 2px !important;
+                color: #ffffff !important;
+                font-size: 0.92rem !important;
+                box-shadow: 4px 4px 0px #10b981 !important;
+            }
+
+            /* Streamlit Native Buttons */
+            .stButton > button {
+                background-color: #000000 !important;
+                color: #ffffff !important;
+                border: 2.5px solid #000000 !important;
+                border-radius: 2px !important;
+                box-shadow: 4px 4px 0px #000000 !important;
+                font-weight: 900 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                transition: all 0.1s ease !important;
+            }
+            .stButton > button:hover {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                box-shadow: 2px 2px 0px #000000 !important;
+                transform: translate(2px, 2px) !important;
+            }
+
+            /* Streamlit Tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                background-color: transparent !important;
+                border-bottom: 3px solid #000000 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                font-weight: 800 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                color: #52525b !important;
+            }
+            .stTabs [data-baseweb="tab"][aria-selected="true"] {
+                background-color: #000000 !important;
+                color: #ffffff !important;
+                font-weight: 900 !important;
+                border-radius: 2px 2px 0 0 !important;
+            }
+        </style>
+        """
+    else:
+        # Variant A: Modern Fintech SaaS (Slate & Electric Indigo)
+        return """
+        <style>
+            /* Canvas & App Shell */
+            [data-testid="stAppViewContainer"], .stApp {
+                background-color: #f8fafc !important;
+                color: #0f172a !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            }
+            header[data-testid="stHeader"] {
+                background-color: #f8fafc !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: #ffffff !important;
+                border-right: 1px solid #e2e8f0 !important;
+            }
+
+            /* Typography */
+            h1, h2, h3, .main-title {
+                font-size: 2.2rem !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
+                letter-spacing: -0.5px !important;
+            }
+            .subtitle {
+                font-size: 1.05rem !important;
+                color: #475569 !important;
+                margin-bottom: 1.3rem !important;
+                line-height: 1.5 !important;
+            }
+
+            /* Cards */
+            .task-card-box {
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 12px !important;
+                padding: 22px !important;
+                margin-bottom: 20px !important;
+                box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+            }
+            .task-card-box:hover {
+                border-color: #cbd5e1 !important;
+                box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.08) !important;
+                transform: translateY(-2px) !important;
+            }
+            .score-card {
+                background-color: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 10px !important;
+                padding: 16px !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+            }
+            .recommendation-banner {
+                background-color: #f0fdf4 !important;
+                border: 1px solid #bbf7d0 !important;
+                border-left: 4px solid #10b981 !important;
+                padding: 12px 16px !important;
+                margin-bottom: 12px !important;
+                border-radius: 8px !important;
+                color: #15803d !important;
+                font-size: 0.92rem !important;
+            }
+
+            /* Streamlit Native Buttons */
+            .stButton > button {
+                background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+                color: #ffffff !important;
+                border-radius: 8px !important;
+                border: none !important;
+                font-weight: 600 !important;
+                box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25) !important;
+                transition: all 0.2s ease !important;
+            }
+            .stButton > button:hover {
+                background: linear-gradient(135deg, #4338ca, #3730a3) !important;
+                box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+                transform: translateY(-1px) !important;
+            }
+
+            /* Streamlit Tabs */
+            .stTabs [data-baseweb="tab-list"] {
+                background-color: transparent !important;
+                border-bottom: 2px solid #e2e8f0 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                font-size: 0.95rem !important;
+                color: #64748b !important;
+            }
+            .stTabs [data-baseweb="tab"][aria-selected="true"] {
+                color: #4f46e5 !important;
+                border-bottom: 3px solid #4f46e5 !important;
+                font-weight: 700 !important;
+            }
+        </style>
+        """
+
+
+def render_variant_showcase(variant: str = "A") -> str:
+    """
+    Renders an interactive side-by-side design showcase directly on the page,
+    demonstrating the live typography, speedometer, sample card, and styling DNA.
+    Strictly NO emojis.
+    """
+    v = variant.upper() if variant.upper() in ["A", "B", "C"] else "A"
+    cfg = VARIANT_CONFIGS[v]
+
+    if v == "B":
+        container_style = "background:#ffffff; border:1px solid #ddd6c8; border-left:6px solid #1e3a2b; border-radius:6px; padding:20px; margin-bottom:24px; box-shadow:0 3px 12px rgba(30,58,43,0.06);"
+        badge_style = "background:#ece7de; color:#1e3a2b; border:1px solid #ddd6c8; border-radius:4px; padding:3px 10px; font-family:Georgia, serif; font-weight:700; font-size:0.8rem; text-transform:uppercase;"
+        title_font = "font-family:Georgia, serif; font-size:1.35rem; font-weight:700; color:#1e3a2b;"
+        btn_sample = "background:#1e3a2b; color:#fdfcf7; border-radius:6px; padding:8px 16px; font-family:Georgia, serif; font-size:0.82rem; font-weight:700; display:inline-block;"
+    elif v == "C":
+        container_style = "background:#ffffff; border:3px solid #000000; border-radius:2px; padding:20px; margin-bottom:24px; box-shadow:6px 6px 0px #000000;"
+        badge_style = "background:#000000; color:#ffffff; border-radius:2px; padding:3px 10px; font-weight:900; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;"
+        title_font = "font-family:'Space Grotesk', sans-serif; font-size:1.4rem; font-weight:900; color:#000000; text-transform:uppercase;"
+        btn_sample = "background:#000000; color:#ffffff; border:2px solid #000000; border-radius:2px; box-shadow:3px 3px 0px #000000; padding:8px 16px; font-size:0.82rem; font-weight:900; text-transform:uppercase; display:inline-block;"
+    else:
+        container_style = "background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:24px; box-shadow:0 4px 20px -2px rgba(15,23,42,0.06);"
+        badge_style = "background:#eef2ff; color:#4f46e5; border:1px solid #c7d2fe; border-radius:999px; padding:3px 12px; font-weight:700; font-size:0.8rem;"
+        title_font = "font-family:system-ui, sans-serif; font-size:1.35rem; font-weight:800; color:#0f172a;"
+        btn_sample = "background:linear-gradient(135deg, #4f46e5, #4338ca); color:#ffffff; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:700; display:inline-block; box-shadow:0 2px 6px rgba(79,70,229,0.3);"
+
+    sample_gauge = render_circular_gauge(85, size=90, compact=True, variant=v)
+
+    return f"""
+    <div style="{container_style}">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="{badge_style}">Вариант {v}</span>
+                <span style="{title_font}">{cfg['full_name']}</span>
+            </div>
+            <div style="font-size:0.85rem; color:#64748b;">
+                {cfg['tagline']}
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; align-items:center;">
+            <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div>{sample_gauge}</div>
+                <div>
+                    <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase;">Спидометр рейтинга</div>
+                    <div style="font-size:1.1rem; font-weight:800; color:#0f172a; margin-top:2px;">85 / 100 Баллов</div>
+                    <div style="font-size:0.75rem; color:#2563eb; font-weight:600;">Уровень: Готовая к разработке</div>
+                </div>
+            </div>
+            <div style="background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Стиль кнопок платформы</div>
+                <div style="{btn_sample}">Взять задачу в работу (+100 XP)</div>
+            </div>
+            <div style="background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid #e2e8f0; font-size:0.8rem; line-height:1.45;">
+                <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">Характеристики дизайн-системы:</div>
+                <div><b>Холст:</b> {cfg['app_bg']}</div>
+                <div><b>Геометрия:</b> Радиус {cfg['card_radius']}, граница {cfg['card_border']}</div>
+                <div><b>Тени:</b> {cfg['card_shadow']}</div>
+            </div>
         </div>
     </div>
     """.strip()

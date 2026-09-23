@@ -11,7 +11,9 @@ from .ui_components import (
     render_xp_award_card,
     render_xp_pending_card,
     render_xp_summary,
-    render_prototype_switcher
+    render_prototype_switcher,
+    get_variant_css,
+    render_variant_showcase
 )
 
 __all__ = [
@@ -33,6 +35,8 @@ __all__ = [
     "render_xp_award_card",
     "render_xp_pending_card",
     "render_xp_summary",
-    "render_prototype_switcher"
+    "render_prototype_switcher",
+    "get_variant_css",
+    "render_variant_showcase"
 ]
 
