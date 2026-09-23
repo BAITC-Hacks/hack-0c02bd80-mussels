@@ -158,6 +158,58 @@ def test_tasks_create_and_synthesize_endpoint(client):
     assert alias_resp.json().get("status") == "ok"
 
 
+def test_catalog_page_renders_tasks_and_filters(client):
+    response = client.get("/catalog")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    content = response.text
+    assert "Общий каталог задач" in content
+    assert "Найдено:" in content or "Найдено" in content
+    assert "Ритейл и e-commerce" in content
+    assert "Финтех и банкинг" in content
+    assert "Приоритетная" in content
+    assert "Готовая" in content
+    assert "Рабочая" in content
+    assert "Черновик" in content
+    assert "Интеллектуальный ассистент клиентской поддержки" in content
+    assert "Предиктивная модель кредитного скоринга" in content
+    assert "<svg" in content
+    assert "Подробнее о задаче" in content or "Подробнее" in content
+
+
+def test_catalog_tasks_sorted_by_rating_descending(client):
+    response = client.get("/catalog")
+    assert response.status_code == 200
+    content = response.text
+
+    idx_95 = content.find("Интеллектуальный ассистент клиентской поддержки")
+    idx_85 = content.find("Предиктивная модель кредитного скоринга")
+    idx_30 = content.find("Автоматическая маршрутизация пациентов поликлиники")
+
+    assert idx_95 != -1, "Task with rating 95 must be present"
+    assert idx_85 != -1, "Task with rating 85 must be present"
+    assert idx_30 != -1, "Task with rating 30 must be present"
+    assert idx_95 < idx_85 < idx_30, "Tasks must be sorted in descending order of rating"
+
+
+def test_catalog_modal_contains_tz_blocks(client):
+    response = client.get("/catalog")
+    assert response.status_code == 200
+    content = response.text
+    for block_label in ["Контекст", "Данные", "Ожидаемый результат", "Критерии", "Ограничения"]:
+        assert block_label in content
+
+
+def test_catalog_tasks_json_data(client):
+    response = client.get("/catalog")
+    assert response.status_code == 200
+    content = response.text
+    assert "tasks: [" in content
+    assert '"id": "task-001"' in content
+    assert '"rating": 95' in content
+    assert '"readiness_level": "Приоритетная"' in content
+
+
 
 def test_no_emojis_in_web_code():
     emoji_pattern = re.compile(

@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -9,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from config import INDUSTRY_OPTIONS, TASK_TYPE_OPTIONS
+from config import INDUSTRY_OPTIONS, TASK_TYPE_OPTIONS, READINESS_LEVELS
 from services.storage import Storage
 from services.ai_generator import AIGenerator
 from services.seed_data import get_initial_drafts
@@ -140,12 +141,30 @@ async def index_page(request: Request):
 
 @app.api_route("/catalog", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def catalog_page(request: Request):
+    tasks = storage.load_tasks()
+    tasks.sort(key=lambda t: t.get("rating", 0), reverse=True)
+    all_milestones = storage.load_milestones()
+
+    for task in tasks:
+        task["compact_gauge_html"] = render_circular_gauge(
+            task.get("rating", 0), size=68, compact=True
+        )
+        task_milestones = [m for m in all_milestones if m.get("task_id") == task.get("id")]
+        task["milestones"] = task_milestones if task_milestones else task.get("milestones", [])
+
+    tasks_json = json.dumps(tasks, ensure_ascii=False)
+
     return templates.TemplateResponse(
         request=request,
         name="catalog.html",
         context={
             "current_route": "/catalog",
             "ai_status": get_ai_status(),
+            "tasks": tasks,
+            "tasks_json": tasks_json,
+            "industry_options": INDUSTRY_OPTIONS,
+            "task_type_options": TASK_TYPE_OPTIONS,
+            "readiness_levels": READINESS_LEVELS,
         }
     )
 
