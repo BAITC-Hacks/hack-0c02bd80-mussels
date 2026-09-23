@@ -51,9 +51,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         
-        <!-- Logo and Primary Nav -->
-        <div class="flex items-center gap-8">
-          <a href="/" class="flex items-center gap-2.5 group">
+        <!-- Logo, Primary Nav & Role Switcher -->
+        <div class="flex items-center gap-6">
+          <a href="/" class="flex items-center gap-2.5 group shrink-0">
             <span class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-xs tracking-wider shadow-sm group-hover:bg-zinc-800 transition">
               AI
             </span>
@@ -62,33 +62,70 @@
             </span>
           </a>
 
-          <!-- Navigation Links -->
-          <nav class="hidden md:flex items-center gap-1.5">
-            <a href="/" 
-               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
-              Конструктор
-            </a>
+          <!-- Navigation & Roles -->
+          <nav class="hidden md:flex items-center gap-3">
+            <!-- Product Navigation: Catalog -->
             <a href="/catalog" 
-               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/catalog' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
+               title="Общий каталог подтвержденных задач бизнеса"
+               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/catalog' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.02)]{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
               Каталог
             </a>
-            <a href="/student" 
-               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/student' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
-              Кабинет студента
-            </a>
-            <a href="/business" 
-               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/business' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
-              Кабинет бизнеса
-            </a>
-            <a href="/jury-demo" 
-               class="px-3 py-1.5 rounded-md text-xs font-medium transition {% if current_route == '/jury-demo' %}bg-zinc-100 text-zinc-900 font-semibold border border-zinc-200/60{% else %}text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60{% endif %}">
-              Демо жюри
-            </a>
+
+            <!-- Subtle Vertical Divider -->
+            <div class="h-4 w-px bg-zinc-200" aria-hidden="true"></div>
+
+            <!-- Role Switcher: Segmented Control -->
+            <div class="inline-flex items-center p-0.5 rounded-lg bg-zinc-100/90 border border-zinc-200/70 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]" role="group" aria-label="Рабочие пространства ролей">
+              <!-- Team Tab -->
+              <a href="/student" 
+                 title="Кабинет студента: рабочее пространство студенческой команды (отклики, этапы и XP)"
+                 aria-label="Кабинет студента"
+                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition {% if current_route == '/student' %}bg-white text-zinc-900 font-semibold shadow-xs border border-zinc-200/60{% else %}text-zinc-600 font-medium hover:text-zinc-900 hover:bg-white/50{% endif %}">
+                <svg class="w-3.5 h-3.5 {% if current_route == '/student' %}text-zinc-900{% else %}text-zinc-400{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5" />
+                </svg>
+                <span>Команда</span>
+              </a>
+
+              <!-- Business Tab -->
+              <a href="/business" 
+                 title="Кабинет бизнеса: рабочее пространство представителя бизнеса (задачи, отклики и верификация)"
+                 aria-label="Кабинет бизнеса"
+                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition {% if current_route == '/business' %}bg-white text-zinc-900 font-semibold shadow-xs border border-zinc-200/60{% else %}text-zinc-600 font-medium hover:text-zinc-900 hover:bg-white/50{% endif %}">
+                <svg class="w-3.5 h-3.5 {% if current_route == '/business' %}text-zinc-900{% else %}text-zinc-400{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Бизнес</span>
+              </a>
+            </div>
           </nav>
         </div>
 
-        <!-- Right Side: AI Status Badge & Reset Button -->
+        <!-- Right Side: CTA Button, Jury Demo & System Utilities -->
         <div class="flex items-center gap-3">
+          <!-- Primary CTA Button: Constructor -->
+          <a href="/" 
+             title="Конструктор задач: пошаговое AI-уточнение и сборка карточки"
+             class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] transition shadow-[0_1px_2px_rgba(0,0,0,0.08)] {% if current_route == '/' %}ring-2 ring-zinc-900 ring-offset-2{% endif %}">
+            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Конструктор</span>
+          </a>
+
+          <!-- Subtle Vertical Divider -->
+          <div class="hidden md:block h-4 w-px bg-zinc-200" aria-hidden="true"></div>
+
+          <!-- Jury Demo: Accent Badge Button -->
+          <a href="/jury-demo" 
+             title="Презентационный сценарий сквозного тестирования для членов жюри"
+             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition border shadow-xs {% if current_route == '/jury-demo' %}bg-violet-600 text-white border-violet-700 ring-2 ring-violet-500/30{% else %}bg-violet-50/90 text-violet-700 border-violet-200/80 hover:bg-violet-100 hover:border-violet-300 active:scale-[0.98]{% endif %}">
+            <svg class="w-3.5 h-3.5 {% if current_route == '/jury-demo' %}text-white{% else %}text-violet-600{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <span>Демо жюри</span>
+          </a>
+
           <!-- AI Engine Status Badge -->
           <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border bg-white border-zinc-200/80 text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
                title="Текущий рабочий режим интеллектуального ядра">
@@ -147,7 +184,7 @@
       <div class="flex items-center gap-4 text-zinc-400">
         <span>Чистая белая архитектура | FastAPI + Tailwind CSS</span>
         <span>|</span>
-        <span class="text-zinc-500 font-medium">ADR-0006: Минимализм</span>
+        <span class="text-zinc-500 font-medium">ADR-0006: Минимализм &bull; ADR-0008: Навигация</span>
       </div>
     </div>
   </footer>

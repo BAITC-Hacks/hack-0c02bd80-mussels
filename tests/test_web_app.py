@@ -24,8 +24,8 @@ def test_index_page_status_and_content(client):
     assert "AI Sana" in content
     assert "Конструктор" in content
     assert "Каталог" in content
-    assert "Кабинет студента" in content
-    assert "Кабинет бизнеса" in content
+    assert "Команда" in content or "Кабинет студента" in content
+    assert "Бизнес" in content or "Кабинет бизнеса" in content
     assert "Демо жюри" in content
     assert "OpenAI API" in content or "Локальный движок" in content
     assert "/api/reset-data" in content or "Сброс данных" in content
