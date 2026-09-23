@@ -3,103 +3,843 @@
 {% block title %}Конструктор задачи | AI Sana{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="constructorApp()" x-cloak>
 
   <!-- Header Banner -->
   <div class="mb-8">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-3">
-      Модуль 01: Конструктор
+      <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>Модуль 01: Конструктор</span>
     </div>
-    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-      Конструктор задачи
-    </h1>
-    <p class="mt-2 text-base text-slate-600 max-w-3xl">
-      Трансформация первичной потребности бизнеса в структурированную карточку задачи с адаптивным пошаговым диалогом и расчетом рейтинга готовности.
-    </p>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+          Конструктор задачи
+        </h1>
+        <p class="mt-2 text-base text-slate-600 max-w-3xl">
+          Трансформация первичной потребности бизнеса в структурированную карточку задачи с адаптивным пошаговым диалогом и расчетом рейтинга готовности.
+        </p>
+      </div>
+
+      <!-- Quick Action: Fill Reference Draft -->
+      <div x-show="step === 'draft'" class="shrink-0">
+        <button type="button"
+                @click="fillSeedDraft()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 active:bg-indigo-200 transition shadow-sm">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Заполнить эталонный черновик</span>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Main Grid Shell for Constructor (Ready for Issue 02) -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <!-- Stepper Tabs -->
+  <div class="mb-8 border-b border-slate-200 pb-4">
+    <div class="flex items-center gap-3 sm:gap-6 text-sm font-medium">
+      <div class="flex items-center gap-2" :class="step === 'draft' ? 'text-indigo-600 font-bold' : (step === 'dialogue' || step === 'result' ? 'text-emerald-600 font-medium' : 'text-slate-400')">
+        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              :class="step === 'draft' ? 'bg-indigo-600 text-white' : (step === 'dialogue' || step === 'result' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600')">
+          1
+        </span>
+        <span>Черновик потребности</span>
+      </div>
+
+      <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+
+      <div class="flex items-center gap-2" :class="step === 'dialogue' ? 'text-indigo-600 font-bold' : (step === 'result' ? 'text-emerald-600 font-medium' : 'text-slate-400')">
+        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              :class="step === 'dialogue' ? 'bg-indigo-600 text-white' : (step === 'result' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600')">
+          2
+        </span>
+        <span>AI-диалог уточнения</span>
+      </div>
+
+      <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+
+      <div class="flex items-center gap-2" :class="step === 'result' ? 'text-indigo-600 font-bold' : 'text-slate-400'">
+        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              :class="step === 'result' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'">
+          3
+        </span>
+        <span>Готовая карточка и рейтинг</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div x-show="errorMessage" 
+       x-transition
+       class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span x-text="errorMessage"></span>
+    </div>
+    <button @click="errorMessage = ''" class="text-red-400 hover:text-red-600 font-bold text-xs uppercase tracking-wider">
+      Закрыть
+    </button>
+  </div>
+
+  <!-- STEP 1: DRAFT FORM -->
+  <div x-show="step === 'draft'" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
     
-    <!-- Left Column: Form & Clarification Dialog Placeholder -->
+    <!-- Left Column: Form -->
     <div class="lg:col-span-8 space-y-6">
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-        <h2 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
-          <span>Первичная потребность бизнеса</span>
-          <span class="text-xs font-medium text-slate-400">Шаг 1 из 3</span>
-        </h2>
-        
-        <div class="space-y-4">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sm:p-8">
+        <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-              Краткое описание черновика
-            </label>
-            <textarea rows="4" 
+            <h2 class="text-lg font-bold text-slate-900">
+              Первичная потребность бизнеса
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Сформулируйте суть задачи свободным текстом, выберите контекст отрасли и направление разработки
+            </p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+            Шаг 1 из 3
+          </span>
+        </div>
+        
+        <form @submit.prevent="startDialogue()" class="space-y-6">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="draft_text" class="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+                Краткое описание черновика
+              </label>
+              <span class="text-xs text-slate-400" x-text="(draft_text || '').length + ' симв.'"></span>
+            </div>
+            <textarea id="draft_text"
+                      rows="4" 
+                      x-model="draft_text"
                       placeholder="Опишите, какую проблему или задачу необходимо решить студенческой команде..." 
-                      class="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 placeholder-slate-400 transition"
-                      disabled></textarea>
+                      class="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 placeholder-slate-400 transition"
+                      required></textarea>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <label for="industry" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
                 Отрасль бизнеса
               </label>
-              <div class="px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                Ритейл и e-commerce
-              </div>
+              <select id="industry"
+                      x-model="industry"
+                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 transition">
+                {% for ind in industry_options %}
+                <option value="{{ ind }}">{{ ind }}</option>
+                {% endfor %}
+              </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <label for="task_type" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
                 Направление задачи
               </label>
-              <div class="px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-500">
-                Диалоговый AI и чат-боты
-              </div>
+              <select id="task_type"
+                      x-model="task_type"
+                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 transition">
+                {% for tt in task_type_options %}
+                <option value="{{ tt }}">{{ tt }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
-        </div>
 
-        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs text-slate-500">
-            Каркас конструктора готов к подключению адаптивного AI-генератора
-          </span>
-          <button type="button" 
-                  disabled
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed">
-            Начать пошаговое уточнение
-          </button>
-        </div>
+          <!-- Bottom Form Actions -->
+          <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>AI проведет пошаговое уточнение недостающих блоков ТЗ</span>
+            </div>
+            <button type="submit" 
+                    :disabled="isLoading || !draft_text.trim()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-sm font-semibold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg x-show="isLoading" class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Начать пошаговое уточнение</span>
+              <svg x-show="!isLoading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Right Column: Rating Gauge & Metrics Placeholder -->
+    <!-- Right Column: Rating Gauge & Metrics Preview -->
     <div class="lg:col-span-4 space-y-6">
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
           Рейтинг готовности
         </h3>
-        
-        <div class="flex items-center justify-center my-6">
-          <div class="relative w-40 h-40 flex items-center justify-center rounded-full bg-slate-50 border-4 border-slate-100">
-            <div class="text-center">
-              <span class="text-4xl font-extrabold text-slate-800">0</span>
-              <span class="text-sm font-medium text-slate-400 block">/ 100</span>
-            </div>
+        <p class="text-xs text-slate-400 mb-4">
+          Прогнозируемая оценка по критериям платформы
+        </p>
+
+        <!-- 240-Degree Speedometer SVG Preview -->
+        <div class="flex items-center justify-center my-4">
+          <div class="relative flex flex-col items-center justify-center">
+            <svg width="150" height="132" viewBox="0 0 150 132" class="overflow-visible">
+              <defs>
+                <linearGradient id="draft-grad-preview" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ef4444" />
+                  <stop offset="100%" stop-color="#dc2626" />
+                </linearGradient>
+              </defs>
+              <!-- 240 degree background track -->
+              <circle cx="75" cy="71" r="59"
+                      fill="none"
+                      stroke="#e2e8f0"
+                      stroke-width="11"
+                      stroke-dasharray="247.14 370.71"
+                      stroke-linecap="round"
+                      transform="rotate(150 75 71)" />
+              <!-- Active progress arc -->
+              <circle cx="75" cy="71" r="59"
+                      fill="none"
+                      stroke="url(#draft-grad-preview)"
+                      stroke-width="11"
+                      :stroke-dasharray="(draft_text.trim() ? '25' : '1') + ' 370.71'"
+                      stroke-linecap="round"
+                      transform="rotate(150 75 71)"
+                      class="transition-all duration-500" />
+              <!-- Labels -->
+              <text x="24" y="124" text-anchor="middle" dominant-baseline="middle"
+                    fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">0</text>
+              <text x="126" y="124" text-anchor="middle" dominant-baseline="middle"
+                    fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">100</text>
+              <!-- Score value -->
+              <text x="75" y="66" text-anchor="middle" dominant-baseline="middle"
+                    fill="#0f172a" font-family="system-ui, sans-serif" font-size="40px" font-weight="800">
+                <tspan x-text="draft_text.trim().length > 30 ? '10' : '0'">0</tspan>
+              </text>
+              <text x="75" y="92" text-anchor="middle" dominant-baseline="middle"
+                    fill="#64748b" font-family="system-ui, sans-serif" font-size="12px" font-weight="600">
+                из 100 баллов
+              </text>
+            </svg>
           </div>
         </div>
 
-        <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 mb-4">
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 mb-3">
           Черновик задачи
         </div>
 
         <p class="text-xs text-slate-500 leading-relaxed">
           Заполняйте поля карточки и отвечайте на вопросы AI, чтобы повысить рейтинг до уровня «Готовая» или «Приоритетная».
         </p>
+
+        <!-- 4-level scale legend -->
+        <div class="mt-6 pt-4 border-t border-slate-100 text-left space-y-2 text-xs">
+          <div class="flex items-center justify-between text-slate-600">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Приоритетная
+            </span>
+            <span class="font-bold text-slate-700">90-100</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-600">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Готовая
+            </span>
+            <span class="font-bold text-slate-700">70-89</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-600">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Рабочая
+            </span>
+            <span class="font-bold text-slate-700">40-69</span>
+          </div>
+          <div class="flex items-center justify-between text-slate-600">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Черновик
+            </span>
+            <span class="font-bold text-slate-700">0-39</span>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 
+  <!-- STEP 2: AI STEP-BY-STEP DIALOGUE -->
+  <div x-show="step === 'dialogue'" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left Column: Dialog & Questions -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Current Active Question Card -->
+      <div class="bg-white border-2 border-indigo-200 rounded-xl shadow-md p-6 sm:p-8">
+        
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-700">
+              Активный вопрос AI-аналитика
+            </span>
+          </div>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100"
+                x-text="current_question ? 'Блок: ' + getFieldTitle(current_question.field_target) : 'Анализ...'">
+          </span>
+        </div>
+
+        <div x-show="isLoading && !current_question" class="py-12 text-center text-slate-500">
+          <svg class="animate-spin w-8 h-8 text-indigo-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <div class="text-sm font-semibold text-slate-700">Генерация адаптивного вопроса...</div>
+          <div class="text-xs text-slate-400 mt-1">AI выявляет наиболее критический пробел в описании</div>
+        </div>
+
+        <div x-show="current_question" class="space-y-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-base font-bold text-slate-900 leading-snug" x-text="current_question ? current_question.question : ''"></p>
+          </div>
+
+          <!-- Quick Reply for Jury Button -->
+          <div class="pt-2">
+            <button type="button"
+                    @click="useQuickReplyAndSubmit()"
+                    :disabled="isLoading"
+                    class="w-full text-left p-3.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 transition flex items-start gap-3 group shadow-sm disabled:opacity-50">
+              <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm group-hover:bg-amber-600 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div class="flex-grow">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-amber-800">
+                    Быстрый ответ для жюри
+                  </span>
+                  <span class="text-xs text-amber-700 font-semibold group-hover:underline">
+                    Отправить в 1 клик
+                  </span>
+                </div>
+                <div class="text-xs text-slate-700 mt-1 line-clamp-2" x-text="current_question ? current_question.quick_reply_for_jury : ''"></div>
+              </div>
+            </button>
+          </div>
+
+          <!-- User Answer Input -->
+          <div class="space-y-1.5 pt-2">
+            <label for="user_answer" class="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+              Ваш ответ на вопрос
+            </label>
+            <textarea id="user_answer"
+                      rows="3"
+                      x-model="user_answer"
+                      placeholder="Введите подробный ответ или нажмите 'Быстрый ответ для жюри' выше..."
+                      class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 transition"></textarea>
+          </div>
+
+          <!-- Question Actions -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <button type="button"
+                    @click="step = 'draft'"
+                    class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition">
+              Вернуться к черновику
+            </button>
+
+            <div class="flex items-center gap-3">
+              <button type="button"
+                      @click="submitAnswer()"
+                      :disabled="isLoading || !user_answer.trim()"
+                      class="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">
+                <svg x-show="isLoading" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>Отправить ответ</span>
+              </button>
+
+              <button type="button"
+                      @click="synthesizeTask()"
+                      :disabled="isLoading"
+                      class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Завершить и собрать карточку</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Previously Answered Questions History -->
+      <div x-show="qa_history.length > 0" class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <h3 class="text-sm font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+          <span>История ответов</span>
+          <span class="text-xs text-slate-500 font-medium" x-text="'Отвечено вопросов: ' + qa_history.length"></span>
+        </h3>
+        <div class="space-y-4">
+          <template x-for="(qa, idx) in qa_history" :key="idx">
+            <div class="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-indigo-700" x-text="'Вопрос ' + (idx + 1)"></span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700"
+                      x-text="getFieldTitle(qa.field_target)"></span>
+              </div>
+              <p class="text-xs font-medium text-slate-700" x-text="qa.question"></p>
+              <div class="pt-2 border-t border-slate-200/60 flex items-start gap-2">
+                <span class="text-[11px] font-bold text-emerald-600 uppercase shrink-0">Ответ:</span>
+                <p class="text-xs text-slate-800" x-text="qa.answer"></p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Status & Tips in Dialogue -->
+    <div class="lg:col-span-4 space-y-6">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
+          Прогресс уточнения
+        </h3>
+        
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Ответов дано:</span>
+            <span class="font-bold text-slate-900" x-text="qa_history.length"></span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                 :style="'width: ' + Math.min(100, Math.max(10, qa_history.length * 20)) + '%'"></div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <h4 class="text-xs font-bold text-slate-800 mb-2">Совет жюри:</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Нажимайте кнопку «Быстрый ответ для жюри» для экспресс-заполнения всех 6 ключевых блоков. Чем больше блоков раскрыто, тем выше итоговый рейтинг готовности задачи.
+          </p>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <button type="button"
+                  @click="synthesizeTask()"
+                  :disabled="isLoading"
+                  class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Сформировать карточку задачи</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STEP 3: RESULT TASK CARD & SPEEDOMETER GAUGE -->
+  <div x-show="step === 'result' && taskResult" class="space-y-8">
+    
+    <!-- Success Banner -->
+    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-emerald-900">
+            Карточка задачи успешно сформирована и сохранена в каталоге!
+          </h2>
+          <p class="text-xs text-emerald-700 mt-0.5">
+            Присвоен уникальный ID: <span class="font-mono font-bold" x-text="taskResult ? taskResult.task.id : ''"></span>. Сгенерированы 3 контрольных этапа с баллами прогресса (XP).
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/catalog" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition">
+          Перейти в каталог
+        </a>
+        <button type="button" @click="resetConstructor()" class="px-3.5 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-50 transition">
+          Создать еще
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Grid: Card Details & Gauge -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Synthesized Task Card Details -->
+      <div class="lg:col-span-8 space-y-6">
+        
+        <!-- Task Header & Meta -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sm:p-8">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                  x-text="taskResult ? taskResult.task.industry : ''"></span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700"
+                  x-text="taskResult ? taskResult.task.task_type : ''"></span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                  :class="{
+                    'bg-emerald-100 text-emerald-800 border border-emerald-300': taskResult && taskResult.readiness_level === 'Приоритетная',
+                    'bg-blue-100 text-blue-800 border border-blue-300': taskResult && taskResult.readiness_level === 'Готовая',
+                    'bg-amber-100 text-amber-800 border border-amber-300': taskResult && taskResult.readiness_level === 'Рабочая',
+                    'bg-red-100 text-red-800 border border-red-300': taskResult && taskResult.readiness_level === 'Черновик'
+                  }"
+                  x-text="taskResult ? taskResult.readiness_level : ''"></span>
+          </div>
+
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight"
+              x-text="taskResult ? taskResult.task.title : ''"></h2>
+
+          <!-- Structured 7 Blocks -->
+          <div class="mt-6 space-y-5 border-t border-slate-100 pt-5">
+            
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Контекст и потребность
+              </h3>
+              <p class="text-sm text-slate-800 leading-relaxed"
+                 x-text="taskResult ? taskResult.task.context_need : ''"></p>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Данные и материалы
+              </h3>
+              <p class="text-sm text-slate-800 leading-relaxed"
+                 x-text="taskResult ? taskResult.task.data_materials : ''"></p>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Ожидаемый результат
+              </h3>
+              <p class="text-sm text-slate-800 leading-relaxed"
+                 x-text="taskResult ? taskResult.task.expected_result : ''"></p>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Критерии успеха
+              </h3>
+              <p class="text-sm text-slate-800 leading-relaxed"
+                 x-text="taskResult ? taskResult.task.success_criteria : ''"></p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Ограничения
+                </h3>
+                <p class="text-sm text-slate-800 leading-relaxed"
+                   x-text="taskResult ? taskResult.task.constraints : ''"></p>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Целевые пользователи
+                </h3>
+                <p class="text-sm text-slate-800 leading-relaxed"
+                   x-text="taskResult ? taskResult.task.target_users : ''"></p>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Связь с бизнесом
+              </h3>
+              <p class="text-sm text-slate-800 leading-relaxed"
+                 x-text="taskResult ? taskResult.task.business_contact : ''"></p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Generated Milestones (Контрольные этапы) -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sm:p-8">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">
+                Контрольные этапы выполнения (Milestones)
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Поэтапный план реализации с начислением баллов прогресса (XP)
+              </p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100">
+              Суммарно: 100 XP
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <template x-for="(m, i) in (taskResult ? taskResult.milestones : [])" :key="m.id">
+              <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-extrabold"
+                        x-text="i + 1"></span>
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800" x-text="m.title"></h4>
+                    <span class="text-xs text-slate-400">Статус: В работе</span>
+                  </div>
+                </div>
+                <div class="shrink-0 text-right">
+                  <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-black"
+                        x-text="'+' + m.points + ' XP'"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Speedometer SVG Gauge & Improvement Suggestions -->
+      <div class="lg:col-span-4 space-y-6">
+        
+        <!-- Speedometer Gauge Card -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+            Рейтинг готовности
+          </h3>
+
+          <!-- Circular SVG Gauge Display -->
+          <div class="flex items-center justify-center my-4" x-html="taskResult ? taskResult.gauge_html : ''">
+          </div>
+
+          <p class="text-xs text-slate-500 mt-2" x-text="taskResult ? taskResult.readiness_description : ''"></p>
+        </div>
+
+        <!-- Rating Breakdown Points -->
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4 pb-2 border-b border-slate-100">
+            Детализация баллов по критериям
+          </h3>
+          <div class="space-y-2.5 text-xs">
+            <template x-for="(pts, key) in (taskResult ? taskResult.rating_breakdown : {})" :key="key">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-600" x-text="getFieldTitle(key)"></span>
+                <span class="font-bold text-slate-900" x-text="pts + ' б.'"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div x-show="taskResult && taskResult.suggestions && taskResult.suggestions.length > 0"
+             class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 pb-2 border-b border-slate-100">
+            Рекомендации по повышению рейтинга
+          </h3>
+          <div class="space-y-3">
+            <template x-for="sug in (taskResult ? taskResult.suggestions : [])" :key="sug.field">
+              <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs space-y-1">
+                <div class="flex items-center justify-between text-amber-900 font-bold">
+                  <span x-text="sug.title"></span>
+                  <span class="text-amber-700" x-text="'+' + sug.potential_points + ' б.'"></span>
+                </div>
+                <p class="text-amber-800 text-[11px]" x-text="sug.hint"></p>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
+
+<!-- Hidden Seed Draft Data for 1-Click Fill -->
+<script id="seed-draft-json" type="application/json">
+{{ sample_draft | tojson | safe }}
+</script>
+
+<script>
+function constructorApp() {
+  const seedDraftEl = document.getElementById('seed-draft-json');
+  let seedDraft = {
+    raw_text: 'Нужен умный чат-бот для поддержки клиентов интернет-магазина электроники, чтобы разгрузить операторов в пиковые часы.',
+    industry: 'Ритейл и e-commerce',
+    task_type: 'Диалоговый AI и чат-боты'
+  };
+  if (seedDraftEl && seedDraftEl.textContent.trim()) {
+    try {
+      const parsed = JSON.parse(seedDraftEl.textContent);
+      if (parsed && parsed.raw_text) {
+        seedDraft = parsed;
+      }
+    } catch (e) {
+      console.error('Error parsing seed draft JSON:', e);
+    }
+  }
+
+  const fieldTitles = {
+    'context_need': 'Контекст и потребность',
+    'data_materials': 'Данные и материалы',
+    'expected_result': 'Ожидаемый результат',
+    'success_criteria': 'Критерии успеха',
+    'constraints': 'Ограничения',
+    'target_users': 'Пользователи',
+    'business_contact': 'Связь с бизнесом'
+  };
+
+  return {
+    step: 'draft', // 'draft' | 'dialogue' | 'result'
+    draft_text: '',
+    industry: seedDraft.industry || 'Ритейл и e-commerce',
+    task_type: seedDraft.task_type || 'Диалоговый AI и чат-боты',
+    qa_history: [],
+    current_question: null,
+    user_answer: '',
+    isLoading: false,
+    errorMessage: '',
+    taskResult: null,
+
+    getFieldTitle(key) {
+      return fieldTitles[key] || key || 'Параметр';
+    },
+
+    fillSeedDraft() {
+      this.draft_text = seedDraft.raw_text || '';
+      this.industry = seedDraft.industry || 'Ритейл и e-commerce';
+      this.task_type = seedDraft.task_type || 'Диалоговый AI и чат-боты';
+      if (window.globalAppInstance && window.globalAppInstance.showToast) {
+        window.globalAppInstance.showToast('Эталонный черновик загружен в форму');
+      }
+    },
+
+    async startDialogue() {
+      if (!this.draft_text.trim()) {
+        this.errorMessage = 'Пожалуйста, введите описание черновика задачи';
+        return;
+      }
+      this.errorMessage = '';
+      this.step = 'dialogue';
+      if (!this.current_question) {
+        await this.fetchNextQuestion();
+      }
+    },
+
+    async fetchNextQuestion() {
+      this.isLoading = true;
+      this.errorMessage = '';
+      try {
+        const resp = await fetch('/api/qa/next', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            draft_text: this.draft_text,
+            industry: this.industry,
+            task_type: this.task_type,
+            qa_history: this.qa_history
+          })
+        });
+        if (!resp.ok) {
+          throw new Error('Ошибка сервера при получении следующего вопроса: ' + resp.status);
+        }
+        const data = await resp.json();
+        this.current_question = data;
+        this.user_answer = '';
+      } catch (err) {
+        this.errorMessage = err.message || 'Не удалось получить следующий вопрос';
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async submitAnswer(overrideAnswer) {
+      const ans = overrideAnswer !== undefined ? overrideAnswer : this.user_answer;
+      if (!ans || !ans.trim()) {
+        this.errorMessage = 'Пожалуйста, укажите ответ на вопрос';
+        return;
+      }
+      this.errorMessage = '';
+      if (this.current_question) {
+        this.qa_history.push({
+          question: this.current_question.question,
+          field_target: this.current_question.field_target,
+          answer: ans.trim()
+        });
+      }
+      this.user_answer = '';
+      await this.fetchNextQuestion();
+    },
+
+    useQuickReplyAndSubmit() {
+      if (!this.current_question || !this.current_question.quick_reply_for_jury) return;
+      const quickReply = this.current_question.quick_reply_for_jury;
+      this.user_answer = quickReply;
+      this.submitAnswer(quickReply);
+    },
+
+    async synthesizeTask() {
+      this.isLoading = true;
+      this.errorMessage = '';
+      try {
+        // If user already typed an answer in the current question input, save it first
+        if (this.current_question && this.user_answer.trim()) {
+          this.qa_history.push({
+            question: this.current_question.question,
+            field_target: this.current_question.field_target,
+            answer: this.user_answer.trim()
+          });
+          this.user_answer = '';
+        }
+
+        const resp = await fetch('/api/tasks/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            draft_text: this.draft_text,
+            industry: this.industry,
+            task_type: this.task_type,
+            qa_history: this.qa_history
+          })
+        });
+
+        if (!resp.ok) {
+          throw new Error('Ошибка сервера при формировании карточки: ' + resp.status);
+        }
+
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          this.taskResult = data;
+          this.step = 'result';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          throw new Error(data.message || 'Не удалось сформировать карточку');
+        }
+      } catch (err) {
+        this.errorMessage = err.message || 'Ошибка при формировании карточки задачи';
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    resetConstructor() {
+      this.step = 'draft';
+      this.draft_text = '';
+      this.qa_history = [];
+      this.current_question = null;
+      this.user_answer = '';
+      this.taskResult = null;
+      this.errorMessage = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+}
+</script>
 {% endblock %}

@@ -1,11 +1,24 @@
+import uuid
+from datetime import datetime
 from pathlib import Path
+from typing import List, Dict, Any, Optional
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
 
+from config import INDUSTRY_OPTIONS, TASK_TYPE_OPTIONS
 from services.storage import Storage
 from services.ai_generator import AIGenerator
+from services.seed_data import get_initial_drafts
+from services.scoring import (
+    calculate_task_score,
+    get_readiness_level,
+    get_improvement_suggestions,
+)
+from services.ui_components import render_circular_gauge
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -31,16 +44,98 @@ def get_ai_status() -> str:
     return "OpenAI API" if ai_generator.client else "Локальный движок"
 
 
+def generate_milestones_for_task(task_id: str, title: str, task_type: str) -> List[Dict[str, Any]]:
+    low_title = (title or "").lower()
+    low_type = (task_type or "").lower()
+
+    if "бот" in low_title or "диалог" in low_type:
+        m1 = "Этап 1: Архитектура микросервиса и схема интеграции с базой FAQ"
+        m2 = "Этап 2: Прототип чат-бота с классификацией интентов и диалоговым сценарием"
+        m3 = "Этап 3: Финальный деплой веб-виджета, нагрузочное тестирование и передача оператору"
+    elif "data" in low_type or "предиктив" in low_type or "кредит" in low_title:
+        m1 = "Этап 1: Исследовательский анализ данных (EDA) и подготовка признаков"
+        m2 = "Этап 2: Разработка и валидация прогнозной ML-модели"
+        m3 = "Этап 3: Развертывание инференс-микросервиса и дашборд метрик качества"
+    elif "веб" in low_type:
+        m1 = "Этап 1: Проектирование UI/UX прототипов и спецификация OpenAPI"
+        m2 = "Этап 2: Разработка клиентского веб-приложения и ключевых сценариев"
+        m3 = "Этап 3: Комплексное тестирование, оптимизация LCP и релиз в продакшн"
+    else:
+        m1 = f"Этап 1: Проектирование архитектуры и подготовка требований: {title[:40]}"
+        m2 = "Этап 2: Разработка базового функционального прототипа"
+        m3 = "Этап 3: Финальное тестирование, документирование и сдача проекта"
+
+    return [
+        {
+            "id": f"ms-{uuid.uuid4().hex[:6]}",
+            "task_id": task_id,
+            "team_id": "",
+            "title": m1,
+            "points": 25,
+            "status": "in_progress",
+            "completed_at": None
+        },
+        {
+            "id": f"ms-{uuid.uuid4().hex[:6]}",
+            "task_id": task_id,
+            "team_id": "",
+            "title": m2,
+            "points": 35,
+            "status": "in_progress",
+            "completed_at": None
+        },
+        {
+            "id": f"ms-{uuid.uuid4().hex[:6]}",
+            "task_id": task_id,
+            "team_id": "",
+            "title": m3,
+            "points": 40,
+            "status": "in_progress",
+            "completed_at": None
+        }
+    ]
+
+
+class QANextRequest(BaseModel):
+    draft_text: str = ""
+    industry: str = "Ритейл и e-commerce"
+    task_type: str = "Диалоговый AI и чат-боты"
+    qa_history: List[Dict[str, str]] = Field(default_factory=list)
+
+
+class TaskCreateRequest(BaseModel):
+    draft_text: Optional[str] = ""
+    industry: Optional[str] = "Ритейл и e-commerce"
+    task_type: Optional[str] = "Диалоговый AI и чат-боты"
+    qa_history: Optional[List[Dict[str, str]]] = Field(default_factory=list)
+    title: Optional[str] = None
+    context_need: Optional[str] = None
+    data_materials: Optional[str] = None
+    expected_result: Optional[str] = None
+    success_criteria: Optional[str] = None
+    constraints: Optional[str] = None
+    target_users: Optional[str] = None
+    business_contact: Optional[str] = None
+
+
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/constructor", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def index_page(request: Request):
+    initial_drafts = get_initial_drafts()
+    sample_draft = initial_drafts[0] if initial_drafts else {}
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
-            "current_route": "/",
+            "current_route": request.url.path if request.url.path == "/constructor" else "/",
             "ai_status": get_ai_status(),
+            "industry_options": INDUSTRY_OPTIONS,
+            "task_type_options": TASK_TYPE_OPTIONS,
+            "sample_draft": sample_draft,
+            "initial_drafts": initial_drafts,
         }
     )
+
 
 
 @app.api_route("/catalog", methods=["GET", "HEAD"], response_class=HTMLResponse)
@@ -105,6 +200,96 @@ async def reset_data_endpoint():
             "message": "База данных успешно сброшена к начальному эталонному состоянию"
         }
     )
+
+
+@app.post("/api/qa/next")
+async def qa_next_endpoint(payload: QANextRequest):
+    result = ai_generator.generate_next_question(
+        draft_text=payload.draft_text,
+        industry=payload.industry,
+        task_type=payload.task_type,
+        qa_history=payload.qa_history
+    )
+    return JSONResponse(result)
+
+
+@app.post("/api/tasks/create")
+@app.post("/api/tasks/synthesize")
+async def tasks_create_endpoint(payload: TaskCreateRequest):
+    has_full_fields = bool(payload.title and payload.context_need and payload.expected_result)
+    if has_full_fields:
+        card = {
+            "title": payload.title,
+            "industry": payload.industry or "Ритейл и e-commerce",
+            "task_type": payload.task_type or "Диалоговый AI и чат-боты",
+            "context_need": payload.context_need or "",
+            "data_materials": payload.data_materials or "",
+            "expected_result": payload.expected_result or "",
+            "success_criteria": payload.success_criteria or "",
+            "constraints": payload.constraints or "",
+            "target_users": payload.target_users or "",
+            "business_contact": payload.business_contact or ""
+        }
+    else:
+        card = ai_generator.synthesize_task_card(
+            draft_text=payload.draft_text or "",
+            industry=payload.industry or "Ритейл и e-commerce",
+            task_type=payload.task_type or "Диалоговый AI и чат-боты",
+            qa_history=payload.qa_history or []
+        )
+        if payload.title:
+            card["title"] = payload.title
+        if payload.context_need:
+            card["context_need"] = payload.context_need
+        if payload.data_materials:
+            card["data_materials"] = payload.data_materials
+        if payload.expected_result:
+            card["expected_result"] = payload.expected_result
+        if payload.success_criteria:
+            card["success_criteria"] = payload.success_criteria
+        if payload.constraints:
+            card["constraints"] = payload.constraints
+        if payload.target_users:
+            card["target_users"] = payload.target_users
+        if payload.business_contact:
+            card["business_contact"] = payload.business_contact
+
+    score, breakdown, missing_fields = calculate_task_score(card)
+    level_info = get_readiness_level(score)
+    suggestions = get_improvement_suggestions(breakdown)
+
+    task_id = f"task-{uuid.uuid4().hex[:6]}"
+    now_iso = datetime.now().isoformat()
+    card["id"] = task_id
+    card["rating"] = score
+    card["readiness_level"] = level_info["level"]
+    card["rating_breakdown"] = breakdown
+    card["missing_fields"] = missing_fields
+    card["published"] = True
+    card["created_at"] = now_iso
+    card["updated_at"] = now_iso
+
+    milestones = generate_milestones_for_task(task_id, card.get("title", ""), card.get("task_type", ""))
+    for m in milestones:
+        storage.add_milestone(m)
+    card["milestones"] = milestones
+
+    storage.upsert_task(card)
+
+    gauge_html = render_circular_gauge(score, size=150, title="Рейтинг готовности")
+
+    return JSONResponse({
+        "status": "ok",
+        "task": card,
+        "score": score,
+        "readiness_level": level_info["level"],
+        "readiness_description": level_info["description"],
+        "rating_breakdown": breakdown,
+        "missing_fields": missing_fields,
+        "suggestions": suggestions,
+        "milestones": milestones,
+        "gauge_html": gauge_html
+    })
 
 
 if __name__ == "__main__":
