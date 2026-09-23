@@ -173,17 +173,17 @@
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
-         class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-5 relative group"
-         x-data="{ accordionOpen: false }">
+         @click="openModalById('{{ task.id }}')"
+         class="bg-white border border-zinc-200 hover:border-zinc-400 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-5 relative group cursor-pointer">
 
       <!-- Top Badges & Level -->
       <div>
         <div class="flex items-center justify-between gap-2 mb-3">
           <div class="flex flex-wrap items-center gap-1.5">
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/60">
               {{ task.industry }}
             </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/60">
               {{ task.task_type }}
             </span>
           </div>
@@ -203,7 +203,7 @@
               Рабочая
             </span>
             {% else %}
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-600 border border-zinc-200">
               Черновик
             </span>
             {% endif %}
@@ -212,7 +212,7 @@
 
         <!-- Title and Gauge Row -->
         <div class="flex items-start justify-between gap-3 mb-2">
-          <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug flex-1">
+          <h3 class="text-base font-bold text-zinc-900 group-hover:text-zinc-700 transition leading-snug flex-1">
             {{ task.title }}
           </h3>
           <!-- Compact circular SVG speedometer -->
@@ -222,96 +222,36 @@
         </div>
 
         <!-- Excerpt of context_need -->
-        <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed mb-4">
+        <p class="text-xs text-zinc-500 line-clamp-3 leading-relaxed mb-4">
           {{ task.context_need }}
         </p>
 
         <!-- Key Metadata Indicators -->
-        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs text-slate-500 mb-4">
+        <div class="pt-3 border-t border-zinc-100 grid grid-cols-2 gap-2 text-xs text-zinc-500 mb-4">
           <div class="flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <span>Этапов: <strong class="text-slate-800">{{ task.milestones | length }}</strong></span>
+            <span>Этапов: <strong class="text-zinc-800">{{ task.milestones | length }}</strong></span>
           </div>
           <div class="flex items-center gap-1.5 justify-end">
-            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span>Баллы: <strong class="text-indigo-600 font-bold">+{{ task.milestones | map(attribute='points') | sum }} XP</strong></span>
+            <span>Баллы: <strong class="text-zinc-900 font-bold">+{{ task.milestones | map(attribute='points') | sum }} XP</strong></span>
           </div>
         </div>
-
-        <!-- Collapsible Accordion with 7 Blocks of TZ and Milestones -->
-        <div x-show="accordionOpen" x-cloak class="pt-3 border-t border-slate-200 space-y-3 text-xs mb-4">
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">1. Контекст и потребность</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.context_need }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">2. Данные и материалы</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.data_materials or "Данные формируются заказчиком" }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">3. Ожидаемый результат</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.expected_result or "Требования уточняются" }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">4. Критерии успеха</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.success_criteria or "Метрики в процессе согласования" }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">5. Ограничения</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.constraints or "Ограничения стандартные для проекта" }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">6. Конечные пользователи</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.target_users or "Целевая аудитория уточняется" }}</div>
-          </div>
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <div class="font-bold text-slate-700 uppercase tracking-wide text-[10px]">7. Связь с бизнесом</div>
-            <div class="mt-1 text-slate-600 leading-relaxed">{{ task.business_contact or "Контакты предоставляются после отклика" }}</div>
-          </div>
-
-          <!-- Milestones details in accordion -->
-          {% if task.milestones %}
-          <div class="bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100">
-            <div class="font-bold text-indigo-900 uppercase tracking-wide text-[10px] mb-1.5">Контрольные этапы реализации</div>
-            <ul class="space-y-1.5">
-              {% for ms in task.milestones %}
-              <li class="flex items-center justify-between text-slate-700 bg-white px-2.5 py-1.5 rounded border border-slate-200">
-                <span class="truncate mr-2">{{ ms.title }}</span>
-                <span class="font-bold text-indigo-600 shrink-0 text-xs">+{{ ms.points }} XP</span>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
-
       </div>
 
       <!-- Action Buttons Footer -->
-      <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 mt-auto">
-        <!-- Accordion toggle button -->
+      <div class="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2 mt-auto">
         <button type="button"
-                @click="accordionOpen = !accordionOpen"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
-          <svg class="w-3.5 h-3.5 text-slate-500 transition-transform" :class="{'rotate-180': accordionOpen}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                @click.stop="openModalById('{{ task.id }}')"
+                class="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold text-zinc-800 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/90 active:scale-[0.99] transition shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+          <span>Подробнее о задаче</span>
+          <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-          <span x-text="accordionOpen ? 'Свернуть' : 'Подробнее о задаче'">Подробнее о задаче</span>
-        </button>
-
-        <!-- Full Modal View Button -->
-        <button type="button"
-                @click="openModalById('{{ task.id }}')"
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition"
-                title="Открыть паспорт задачи в модальном окне">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-          <span>В модальном окне</span>
         </button>
       </div>
 
@@ -352,29 +292,29 @@
         <template x-if="activeModalTask">
           <div>
             <!-- Modal Header -->
-            <div class="p-6 bg-slate-50 border-b border-slate-200 flex items-start justify-between gap-4">
+            <div class="p-6 bg-zinc-50/80 border-b border-zinc-200/80 flex items-start justify-between gap-4">
               <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-white border border-slate-300 text-slate-700"
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-white border border-zinc-200 text-zinc-700"
                         x-text="activeModalTask.industry"></span>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700"
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-zinc-100 border border-zinc-200/80 text-zinc-700"
                         x-text="activeModalTask.task_type"></span>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
                         :class="{
                           'bg-emerald-50 text-emerald-700 border border-emerald-200': activeModalTask.readiness_level === 'Приоритетная',
                           'bg-blue-50 text-blue-700 border border-blue-200': activeModalTask.readiness_level === 'Готовая',
                           'bg-amber-50 text-amber-700 border border-amber-200': activeModalTask.readiness_level === 'Рабочая',
-                          'bg-red-50 text-red-700 border border-red-200': activeModalTask.readiness_level === 'Черновик'
+                          'bg-zinc-100 text-zinc-700 border border-zinc-200': activeModalTask.readiness_level === 'Черновик'
                         }"
                         x-text="activeModalTask.readiness_level"></span>
                 </div>
-                <h2 id="modal-title" class="text-xl font-extrabold text-slate-900 leading-snug" x-text="activeModalTask.title"></h2>
+                <h2 id="modal-title" class="text-xl font-bold tracking-tight text-zinc-900 leading-snug" x-text="activeModalTask.title"></h2>
               </div>
 
               <!-- Close button -->
               <button type="button" 
                       @click="closeModal()" 
-                      class="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 hover:bg-slate-200 transition">
+                      class="text-zinc-400 hover:text-zinc-600 rounded-lg p-1.5 hover:bg-zinc-200/60 transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -385,11 +325,11 @@
             <div class="p-6 max-h-[70vh] overflow-y-auto space-y-5 text-sm">
 
               <!-- Rating & Status Box -->
-              <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-200/80">
                 <div>
-                  <div class="text-xs uppercase font-bold text-slate-500 tracking-wider">Рейтинг готовности задачи</div>
-                  <div class="text-2xl font-black text-slate-900 mt-1">
-                    <span x-text="activeModalTask.rating"></span> <span class="text-sm font-semibold text-slate-500">/ 100 баллов</span>
+                  <div class="text-xs uppercase font-bold text-zinc-500 tracking-wider">Рейтинг готовности задачи</div>
+                  <div class="text-2xl font-black text-zinc-900 mt-1">
+                    <span x-text="activeModalTask.rating"></span> <span class="text-sm font-semibold text-zinc-500">/ 100 баллов</span>
                   </div>
                 </div>
                 <div x-html="activeModalTask.compact_gauge_html"></div>
@@ -397,57 +337,57 @@
 
               <!-- 7 Standard Blocks of TZ -->
               <div class="space-y-4">
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">1. Контекст и потребность</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.context_need"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">1. Контекст и потребность</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.context_need"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">2. Исходные данные и материалы</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.data_materials || 'Предоставляются заказчиком по запросу'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">2. Исходные данные и материалы</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.data_materials || 'Предоставляются заказчиком по запросу'"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">3. Ожидаемый результат</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.expected_result || 'Определяется в ходе предпроектного анализа'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">3. Ожидаемый результат</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.expected_result || 'Определяется в ходе предпроектного анализа'"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">4. Критерии успеха</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.success_criteria || 'Метрики согласовываются на первом этапе'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">4. Критерии успеха</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.success_criteria || 'Метрики согласовываются на первом этапе'"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">5. Ограничения</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.constraints || 'Стандартные технические ограничения'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">5. Ограничения</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.constraints || 'Стандартные технические ограничения'"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">6. Конечные пользователи</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.target_users || 'Внутренние и внешние клиенты'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">6. Конечные пользователи</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.target_users || 'Внутренние и внешние клиенты'"></p>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl p-4 bg-white">
-                  <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">7. Связь с бизнесом</div>
-                  <p class="text-slate-800 leading-relaxed" x-text="activeModalTask.business_contact || 'Контактное лицо доступно авторизованным командам'"></p>
+                <div class="border border-zinc-200/90 rounded-xl p-4 bg-white">
+                  <div class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">7. Связь с бизнесом</div>
+                  <p class="text-zinc-800 leading-relaxed" x-text="activeModalTask.business_contact || 'Контактное лицо доступно авторизованным командам'"></p>
                 </div>
               </div>
 
               <!-- Milestones Block in Modal -->
               <template x-if="activeModalTask.milestones && activeModalTask.milestones.length > 0">
-                <div class="border border-indigo-100 bg-indigo-50/40 rounded-xl p-4">
-                  <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">
+                <div class="border border-zinc-200 bg-zinc-50/60 rounded-xl p-4">
+                  <div class="text-xs font-bold text-zinc-800 uppercase tracking-wider mb-3">
                     Контрольные этапы выполнения задачи
                   </div>
                   <div class="space-y-2">
                     <template x-for="(ms, idx) in activeModalTask.milestones" :key="ms.id || idx">
-                      <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 bg-white border border-zinc-200 rounded-lg">
                         <div class="flex items-center gap-3">
-                          <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center"
+                          <span class="w-6 h-6 rounded-full bg-zinc-100 text-zinc-800 font-bold text-xs flex items-center justify-center border border-zinc-200"
                                 x-text="idx + 1"></span>
-                          <span class="text-sm font-medium text-slate-800" x-text="ms.title"></span>
+                          <span class="text-sm font-medium text-zinc-800" x-text="ms.title"></span>
                         </div>
-                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded"
+                        <span class="text-xs font-bold text-zinc-900 bg-zinc-100 border border-zinc-200 px-2 py-1 rounded"
                               x-text="'+' + ms.points + ' XP'"></span>
                       </div>
                     </template>
@@ -458,17 +398,17 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
-              <a href="/student" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-sm transition">
+            <div class="p-4 bg-zinc-50/80 border-t border-zinc-200/80 flex items-center justify-between gap-3">
+              <a href="/student" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-                Откликнуться на задачу (в Кабинет студента)
+                <span>Откликнуться на задачу (в Кабинет студента)</span>
               </a>
               <button type="button" 
                       @click="closeModal()" 
-                      class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition shadow-sm">
-                Закрыть
+                      class="px-4 py-2 rounded-lg text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 active:scale-[0.98] transition shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                <span>Закрыть</span>
               </button>
             </div>
           </div>
