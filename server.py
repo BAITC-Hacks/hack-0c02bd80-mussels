@@ -371,12 +371,27 @@ async def complete_milestone_endpoint(task_id: str, milestone_id: str):
     if not target:
         return JSONResponse({"status": "error", "message": "Этап не найден"}, status_code=404)
 
-    if not target.get("team_id"):
-        proposals = storage.get_proposals_for_task(task_id)
-        accepted_prop = next((p for p in proposals if p.get("status") == "accepted"), None)
-        if accepted_prop and accepted_prop.get("team_id"):
-            target["team_id"] = accepted_prop.get("team_id")
-            storage.save_milestones(all_milestones)
+    if target.get("task_id") and target.get("task_id") != task_id:
+        return JSONResponse({"status": "error", "message": "Этап не принадлежит указанной задаче"}, status_code=400)
+
+    task = storage.get_task_by_id(task_id)
+    if not task:
+        return JSONResponse({"status": "error", "message": "Задача не найдена"}, status_code=404)
+
+    proposals = storage.get_proposals_for_task(task_id)
+    accepted_prop = next((p for p in proposals if p.get("status") == "accepted"), None)
+    task["accepted_proposal"] = accepted_prop
+
+    if not task.get("accepted_proposal"):
+        return JSONResponse(
+            {"status": "error", "message": "Сначала выберите команду-исполнителя"},
+            status_code=400
+        )
+
+    accepted_team_id = accepted_prop.get("team_id")
+    if accepted_team_id and target.get("team_id") != accepted_team_id:
+        target["team_id"] = accepted_team_id
+        storage.save_milestones(all_milestones)
 
     completed = storage.complete_milestone(milestone_id)
     if completed is None:

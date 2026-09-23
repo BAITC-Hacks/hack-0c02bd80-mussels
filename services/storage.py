@@ -174,7 +174,7 @@ class Storage:
             self.save_milestones(milestones)
             teams = self.load_teams()
             for team in teams:
-                if team.get("id") == target["team_id"]:
+                if team.get("id") == target.get("team_id"):
                     team["progress_points"] = team.get("progress_points", 0) + target.get("points", 25)
                     cm = team.get("completed_milestones", [])
                     if target["id"] not in cm:

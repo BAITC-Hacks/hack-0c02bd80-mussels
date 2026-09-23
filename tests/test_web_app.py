@@ -222,6 +222,8 @@ def test_business_page_renders_tasks_milestones_and_proposals(client):
     assert "Выбрать команду" in content
     assert "Отклонить" in content
     assert "Подтвердить этап" in content or "+XP" in content
+    assert "Ожидает назначения команды" in content
+    assert "Сначала выберите команду-исполнителя" in content
     # Ensure tasks and proposals from seed data are rendered
     assert "Интеллектуальный ассистент клиентской поддержки" in content or "task-001" in content
     assert "NeuralMinds" in content or "EdTech Innovators" in content
@@ -264,6 +266,63 @@ def test_milestone_complete_endpoint(client):
     assert resp2.status_code == 200
     team_after_repeat = storage.get_team_by_id(team_id)
     assert team_after_repeat["progress_points"] == team_after["progress_points"]
+
+
+def test_milestone_complete_guardrail_without_accepted_team(client):
+    from server import storage
+    storage.reset_all_data()
+
+    # task-003 has prop-004 in pending status (no accepted proposal)
+    task_id = "task-003"
+    ms_id = "ms-guardrail-test"
+    storage.add_milestone({
+        "id": ms_id,
+        "task_id": task_id,
+        "team_id": "",
+        "title": "Тестовый этап без выбранной команды",
+        "points": 35,
+        "status": "in_progress",
+        "completed_at": None
+    })
+
+    team_id = "team-003"
+    team_before = storage.get_team_by_id(team_id)
+    points_before = team_before.get("progress_points", 0)
+
+    # 1. Attempt to complete milestone without an accepted team -> 400 Bad Request
+    resp = client.post(f"/api/milestones/{task_id}/{ms_id}/complete")
+    assert resp.status_code == 400
+    err_data = resp.json()
+    assert err_data.get("status") == "error"
+    assert "команд" in err_data.get("message", "").lower()
+
+    # Verify milestone status did not change and no points awarded
+    ms_in_storage = next((m for m in storage.load_milestones() if m["id"] == ms_id), None)
+    assert ms_in_storage is not None
+    assert ms_in_storage.get("status") == "in_progress"
+    assert ms_in_storage.get("completed_at") is None
+
+    team_after_fail = storage.get_team_by_id(team_id)
+    assert team_after_fail["progress_points"] == points_before
+
+    # 2. Accept proposal for task-003
+    accept_resp = client.post(
+        "/api/proposals/prop-004/status",
+        json={"status": "accepted", "comment": "Команда утверждена"}
+    )
+    assert accept_resp.status_code == 200
+
+    # 3. Now completing the milestone must succeed and award XP to the accepted team
+    success_resp = client.post(f"/api/milestones/{task_id}/{ms_id}/complete")
+    assert success_resp.status_code == 200
+    success_data = success_resp.json()
+    assert success_data.get("status") == "ok"
+    assert success_data["milestone"]["status"] == "completed"
+    assert success_data["milestone"]["team_id"] == team_id
+
+    team_after_success = storage.get_team_by_id(team_id)
+    assert team_after_success["progress_points"] == points_before + 35
+    assert ms_id in team_after_success.get("completed_milestones", [])
 
 
 def test_proposal_status_update_endpoint(client):
