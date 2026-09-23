@@ -3,455 +3,291 @@
 {% block title %}Кабинет студенческой команды | AI Sana{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ activeTab: 'all_milestones' }">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-  <!-- Breadcrumbs & Header -->
-  <div class="mb-8">
-    <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/80 mb-3">
-      <span class="w-1.5 h-1.5 rounded-full bg-zinc-900"></span>
-      <span>Модуль 03: Студент</span>
+  <!-- 1. Header & Team Selector Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200/80">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+        Кабинет студенческой команды
+      </h1>
+      <p class="mt-1 text-xs sm:text-sm text-zinc-500">
+        Прогресс по задачам и персональные AI-рекомендации
+      </p>
     </div>
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-          Кабинет студенческой команды
-        </h1>
-        <p class="mt-2 text-sm text-zinc-500 max-w-2xl leading-relaxed">
-          Мониторинг баллов прогресса (XP), персональные рекомендации на базе многомерного мэтчинга и история достижений.
-        </p>
-      </div>
 
-      <!-- Quick Action: General Catalog -->
-      <div class="flex items-center gap-3">
-        <a href="/catalog" 
-           class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 active:scale-[0.98] transition shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-          <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+    <!-- Team Switcher: Clean Single Select Dropdown -->
+    <div class="flex items-center gap-2.5">
+      <label for="team-select" class="text-xs font-medium text-zinc-500 shrink-0">
+        Команда:
+      </label>
+      <div class="relative">
+        <select id="team-select"
+                onchange="window.location.href='/student?team_id=' + this.value" 
+                class="appearance-none text-xs sm:text-sm font-semibold text-zinc-900 bg-white border border-zinc-200 rounded-lg pl-3 pr-8 py-1.5 hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer shadow-xs transition">
+          {% for t in teams %}
+          <option value="{{ t.id }}" {% if t.id == selected_team.id %}selected{% endif %}>
+            {{ t.name }} ({{ t.progress_points }} XP)
+          </option>
+          {% endfor %}
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
-          <span>В общий каталог</span>
-        </a>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Team Switcher Bar -->
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Выбор команды:</span>
-      <select onchange="window.location.href='/student?team_id=' + this.value" 
-              class="text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-        {% for t in teams %}
-        <option value="{{ t.id }}" {% if t.id == selected_team.id %}selected{% endif %}>
-          {{ t.name }} ({{ t.progress_points }} XP)
-        </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <!-- Quick Team Pill Nav -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-      {% for t in teams %}
-      <a href="/student?team_id={{ t.id }}" 
-         class="px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap {% if t.id == selected_team.id %}bg-indigo-600 text-white shadow-sm font-semibold{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
-        {{ t.name }}
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- SECTION 1: Team Profile & XP Summary Widgets -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-
-    <!-- Team Profile Card (5 cols) -->
-    <div class="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between">
-      <div>
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-black text-lg shadow-sm">
-              {{ selected_team.name[:2] }}
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-slate-900 tracking-tight">
-                {{ selected_team.name }}
-              </h2>
-              <span class="inline-flex items-center gap-1 text-xs text-slate-500 font-medium">
-                ID: {{ selected_team.id }}
-              </span>
-            </div>
-          </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-            {{ selected_team.preferred_readiness }} готовность
+  <!-- 2. Team Profile & XP Summary Card -->
+  <div class="bg-white border border-zinc-200/80 rounded-xl p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <!-- Left: Avatar, Name & Compact Tags -->
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+        {{ selected_team.name[:2] }}
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h2 class="text-xl font-bold text-zinc-900 tracking-tight">
+            {{ selected_team.name }}
+          </h2>
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+            Готовность: {{ selected_team.preferred_readiness }}
           </span>
         </div>
+        <!-- Combined Tags: Skills & Interests without wordy labels -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          {% for skill in selected_team.skills %}
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-zinc-50 text-zinc-700 border border-zinc-200/70">
+            {{ skill }}
+          </span>
+          {% endfor %}
+          {% for ind in selected_team.industry_interests %}
+          <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 text-zinc-600">
+            {{ ind }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
 
-        <!-- Team Metadata List -->
-        <div class="space-y-3 pt-2 border-t border-slate-100 text-xs">
-          <div>
-            <span class="text-slate-400 font-medium block mb-1">Отраслевые интересы:</span>
-            <div class="flex flex-wrap gap-1.5">
-              {% for ind in selected_team.industry_interests %}
-              <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium border border-blue-100">
-                {{ ind }}
-              </span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div>
-            <span class="text-slate-400 font-medium block mb-1">Типы решаемых задач:</span>
-            <div class="flex flex-wrap gap-1.5">
-              {% for t_type in selected_team.task_type_interests %}
-              <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-medium border border-purple-100">
-                {{ t_type }}
-              </span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <div>
-            <span class="text-slate-400 font-medium block mb-1">Инженерный стек и навыки:</span>
-            <div class="flex flex-wrap gap-1.5">
-              {% for skill in selected_team.skills %}
-              <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px] font-medium border border-slate-200">
-                {{ skill }}
-              </span>
-              {% endfor %}
-            </div>
-          </div>
+    <!-- Right: XP Metrics -->
+    <div class="flex items-center gap-4 sm:gap-6 pt-4 lg:pt-0 border-t lg:border-t-0 border-zinc-100 shrink-0">
+      <!-- Total Earned XP -->
+      <div class="px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200/60">
+        <span class="text-[11px] font-medium text-zinc-500 block">Подтверждено</span>
+        <div class="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">
+          {{ stats.total_earned_xp }} <span class="text-xs font-bold text-emerald-600">XP</span>
         </div>
       </div>
 
-      <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span>Профиль верифицирован платформой</span>
-        <span class="text-emerald-600 font-semibold inline-flex items-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Активен
+      <!-- Completed Stages -->
+      <div class="px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200/60">
+        <span class="text-[11px] font-medium text-zinc-500 block">Закрыто этапов</span>
+        <div class="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">
+          {{ stats.completed_count }}
+        </div>
+      </div>
+
+      <!-- In Progress XP -->
+      <div class="px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200/60">
+        <span class="text-[11px] font-medium text-zinc-500 block">В разработке</span>
+        <div class="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">
+          +{{ stats.potential_xp }} <span class="text-xs font-bold text-amber-600">XP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Projects & Milestones Section: Project -> Completed -> In Progress -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-bold tracking-tight text-zinc-900">
+          Баллы прогресса по проектам
+        </h2>
+        <span class="text-xs text-zinc-400 font-normal">({{ project_milestones|length }})</span>
+      </div>
+    </div>
+
+    {% if project_milestones %}
+    <div class="space-y-4">
+      {% for proj in project_milestones %}
+      <div class="bg-white border border-zinc-200/80 rounded-xl p-5 shadow-xs transition hover:border-zinc-300">
+        <!-- Project Title Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3.5 border-b border-zinc-100">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
+                {{ proj.task_industry }}
+              </span>
+              <span class="text-xs font-medium text-zinc-400">&bull;</span>
+              <span class="text-xs text-zinc-500">{{ proj.task_type }}</span>
+            </div>
+            <h3 class="text-base font-bold text-zinc-900">
+              {{ proj.task_title }}
+            </h3>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            {% if proj.earned_xp > 0 %}
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              +{{ proj.earned_xp }} XP начислено
+            </span>
+            {% endif %}
+            {% if proj.potential_xp > 0 %}
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
+              +{{ proj.potential_xp }} XP в работе
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Milestones Body: Completed then In Progress -->
+        <div class="pt-3.5 space-y-3">
+          
+          <!-- Completed Milestones -->
+          {% if proj.completed_milestones %}
+          <div class="space-y-2">
+            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+              Завершенные контрольные этапы
+            </span>
+            <div class="space-y-1.5">
+              {% for ms in proj.completed_milestones %}
+              <div class="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-zinc-50/60 border border-zinc-100 text-xs">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  <span class="font-medium text-zinc-800">{{ ms.title }}</span>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  {% if ms.formatted_date %}
+                  <span class="text-zinc-400 text-[11px]">{{ ms.formatted_date }}</span>
+                  {% endif %}
+                  <span class="font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-100 shadow-xs">
+                    +{{ ms.points }} XP
+                  </span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- In-Progress Milestones -->
+          {% if proj.in_progress_milestones %}
+          <div class="space-y-2 {% if proj.completed_milestones %}pt-2 border-t border-zinc-100{% endif %}">
+            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+              Этапы в разработке
+            </span>
+            <div class="space-y-1.5">
+              {% for ms in proj.in_progress_milestones %}
+              <div class="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-amber-50/30 border border-amber-100 text-xs">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <span class="font-medium text-zinc-800">{{ ms.title }}</span>
+                  <span class="hidden sm:inline text-zinc-400 text-[11px]">(ожидает подтверждения)</span>
+                </div>
+                <span class="font-semibold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200/60 shadow-xs shrink-0">
+                  +{{ ms.points }} XP
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white border border-zinc-200 rounded-xl p-8 text-center text-xs text-zinc-500">
+      У команды пока нет активных этапов. Выберите подходящую задачу из списка рекомендаций ниже.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 4. Minimalist AI Recommendations Grid -->
+  <div class="space-y-4 pt-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-bold tracking-tight text-zinc-900">
+          Рекомендованные задачи
+        </h2>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200">
+          AI-рекомендации
         </span>
       </div>
     </div>
 
-    <!-- XP Stats Counters (7 cols) -->
-    <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-      
-      <!-- Stat 1: Total Confirmed XP -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-emerald-200 transition">
-        <div>
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 border border-emerald-100">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-          </div>
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Баллы прогресса</span>
-          <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1">
-            {{ stats.total_earned_xp }} <span class="text-base font-bold text-emerald-600">XP</span>
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-100">
-          Общий баланс подтвержденных баллов
-        </p>
-      </div>
-
-      <!-- Stat 2: Completed Milestones -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-indigo-200 transition">
-        <div>
-          <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 border border-indigo-100">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-          </div>
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Закрытые этапы</span>
-          <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1">
-            {{ stats.completed_count }}
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-100">
-          Успешно принято бизнесом
-        </p>
-      </div>
-
-      <!-- Stat 3: Potential XP In-Progress -->
-      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-amber-200 transition">
-        <div>
-          <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4 border border-amber-100">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Потенциал в работе</span>
-          <div class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-1">
-            +{{ stats.potential_xp }} <span class="text-base font-bold text-amber-600">XP</span>
-          </div>
-        </div>
-        <p class="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-100">
-          Ожидают подтверждения бизнесом
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- SECTION 2: XP Ledger & Milestones Progress -->
-  <div class="mb-12">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">
-          Подтвержденные баллы прогресса
-        </h2>
-        <p class="text-sm text-slate-500 mt-1">
-          Лента начисленных баллов за контрольные этапы и мониторинг активных задач в разработке.
-        </p>
-      </div>
-
-      <!-- Sub-Tabs -->
-      <div class="inline-flex p-1 bg-slate-100 rounded-xl text-xs font-semibold">
-        <button type="button" 
-                @click="activeTab = 'all_milestones'"
-                :class="activeTab === 'all_milestones' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="px-3 py-1.5 rounded-lg transition">
-          Все этапы ({{ completed_milestones|length + in_progress_milestones|length }})
-        </button>
-        <button type="button" 
-                @click="activeTab = 'completed'"
-                :class="activeTab === 'completed' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="px-3 py-1.5 rounded-lg transition">
-          Подтвержденные ({{ completed_milestones|length }})
-        </button>
-        <button type="button" 
-                @click="activeTab = 'in_progress'"
-                :class="activeTab === 'in_progress' ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                class="px-3 py-1.5 rounded-lg transition">
-          В работе ({{ in_progress_milestones|length }})
-        </button>
-      </div>
-    </div>
-
-    <!-- Milestones Grid / List -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      <!-- Column 1: Confirmed XP Milestones -->
-      <div x-show="activeTab === 'all_milestones' || activeTab === 'completed'" class="space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">
-              Завершенные контрольные этапы
-            </h3>
-          </div>
-          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-            {{ completed_milestones|length }} шт.
-          </span>
-        </div>
-
-        {% if completed_milestones %}
-          {% for ms in completed_milestones %}
-          <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-emerald-300 transition flex flex-col justify-between">
-            <div>
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                  {{ ms.task_title }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
-                  +{{ ms.points }} XP
-                </span>
-              </div>
-              <h4 class="text-base font-bold text-slate-900 mt-2">
-                {{ ms.title }}
-              </h4>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
-                <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Подтверждено бизнесом
-              </span>
-              {% if ms.formatted_date %}
-              <span class="inline-flex items-center gap-1 text-slate-400">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ ms.formatted_date }}
-              </span>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        {% else %}
-          <div class="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-sm">
-            <svg class="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p class="text-xs text-slate-500">
-              Пока нет подтвержденных этапов. Сдавайте контрольные точки представителю бизнеса для начисления баллов.
-            </p>
-          </div>
-        {% endif %}
-      </div>
-
-      <!-- Column 2: In-Progress Milestones -->
-      <div x-show="activeTab === 'all_milestones' || activeTab === 'in_progress'" class="space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">
-              Этапы в разработке
-            </h3>
-          </div>
-          <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-            {{ in_progress_milestones|length }} шт.
-          </span>
-        </div>
-
-        {% if in_progress_milestones %}
-          {% for ms in in_progress_milestones %}
-          <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-amber-300 transition flex flex-col justify-between">
-            <div>
-              <div class="flex items-start justify-between gap-3 mb-2">
-                <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                  {{ ms.task_title }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                  {{ ms.points }} XP в работе
-                </span>
-              </div>
-              <h4 class="text-base font-bold text-slate-900 mt-2">
-                {{ ms.title }}
-              </h4>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span class="inline-flex items-center gap-1.5 text-amber-600 font-semibold">
-                <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                В работе (ожидает подтверждения)
-              </span>
-              <span class="text-slate-400">
-                После сдачи: +{{ ms.points }} XP
-              </span>
-            </div>
-          </div>
-          {% endfor %}
-        {% else %}
-          <div class="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-sm">
-            <svg class="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <p class="text-xs text-slate-500">
-              Нет активных этапов в работе. Выберите задачу в каталоге и подайте отклик.
-            </p>
-          </div>
-        {% endif %}
-      </div>
-
-    </div>
-  </div>
-
-  <!-- SECTION 3: Multi-dimensional AI Task Recommendations -->
-  <div>
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-      <div>
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100 mb-2">
-          <svg class="w-3.5 h-3.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          Персональные AI-рекомендации
-        </div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">
-          Рекомендуемые задачи для команды
-        </h2>
-        <p class="text-sm text-slate-500 mt-1 max-w-2xl">
-          Многомерный расчет совместимости: 40% домен, 40% инженерный стек, 20% готовность ТЗ к разработке.
-        </p>
-      </div>
-
-      <!-- Info Badge on Freedom of Choice -->
-      <div class="text-xs text-slate-500 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm max-w-sm">
-        <span class="font-semibold text-slate-700 block mb-0.5">Умные подсказки</span>
-        Рекомендации не ограничивают выбор: вы вправе взять любую задачу из общего каталога.
-      </div>
-    </div>
-
-    <!-- Recommendations Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- 3-Col Clean Minimalist Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {% for task in recommended_tasks %}
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden group">
-        
-        <div class="p-6">
-          
-          <!-- Top Row: Match Score Badge & Readiness Badge -->
+      <div class="bg-white border border-zinc-200/90 rounded-xl p-5 shadow-xs hover:border-zinc-400 transition flex flex-col justify-between group">
+        <div>
+          <!-- Match & Readiness Header -->
           <div class="flex items-center justify-between gap-2 mb-3">
-            <!-- Match Badge -->
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border {% if task.match_score >= 80 %}bg-emerald-50 text-emerald-700 border-emerald-200{% elif task.match_score >= 50 %}bg-indigo-50 text-indigo-700 border-indigo-200{% else %}bg-slate-50 text-slate-700 border-slate-200{% endif %}">
-              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border {% if task.match_score >= 80 %}bg-emerald-50 text-emerald-700 border-emerald-200/70{% elif task.match_score >= 50 %}bg-zinc-100 text-zinc-700 border-zinc-200{% else %}bg-zinc-50 text-zinc-500 border-zinc-200{% endif %}">
+              <span class="w-1.5 h-1.5 rounded-full {% if task.match_score >= 80 %}bg-emerald-500{% else %}bg-zinc-400{% endif %}"></span>
               Совпадение {{ task.match_score }}%
             </span>
 
-            <!-- Readiness Badge -->
-            <span class="px-2 py-0.5 rounded text-xs font-semibold {% if task.readiness_level == 'Приоритетная' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif task.readiness_level == 'Готовая' %}bg-blue-50 text-blue-700 border border-blue-200{% elif task.readiness_level == 'Рабочая' %}bg-amber-50 text-amber-700 border border-amber-200{% else %}bg-rose-50 text-rose-700 border border-rose-200{% endif %}">
+            <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 text-zinc-600 border border-zinc-200/60">
               {{ task.readiness_level }} ({{ task.rating }})
             </span>
           </div>
 
           <!-- Task Title -->
-          <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug line-clamp-2 mb-2">
+          <h3 class="text-sm font-bold text-zinc-900 group-hover:text-zinc-600 transition leading-snug mb-2 line-clamp-2">
             {{ task.title }}
           </h3>
 
           <!-- Tags -->
-          <div class="flex flex-wrap gap-1.5 mb-3">
-            <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+          <div class="flex flex-wrap gap-1.5 mb-3 text-[11px] text-zinc-500">
+            <span class="px-2 py-0.5 rounded bg-zinc-50 border border-zinc-200/60">
               {{ task.industry }}
             </span>
-            <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+            <span class="px-2 py-0.5 rounded bg-zinc-50 border border-zinc-200/60">
               {{ task.task_type }}
             </span>
           </div>
 
-          <!-- Need / Context snippet -->
-          <p class="text-xs text-slate-600 line-clamp-3 mb-4 leading-relaxed">
-            {{ task.context_need }}
-          </p>
-
-          <!-- AI Justification Box -->
-          <div class="bg-indigo-50/70 border border-indigo-100 rounded-lg p-3 text-xs text-indigo-950 flex items-start gap-2.5">
-            <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <div class="leading-relaxed">
-              <span class="font-bold text-indigo-900 block mb-0.5">Обоснование от AI:</span>
-              {{ task.recommendation_explanation }}
-            </div>
+          <!-- Concise AI explanation (quote style) -->
+          <div class="border-l-2 border-zinc-900 bg-zinc-50/70 pl-3 py-1.5 text-xs text-zinc-600 rounded-r-md leading-relaxed mb-4">
+            {{ task.recommendation_explanation }}
           </div>
-
         </div>
 
-        <!-- Footer Actions -->
-        <div class="bg-slate-50/80 px-6 py-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+        <!-- Footer Action -->
+        <div class="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
           {% if task.is_executor %}
-          <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-            <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span class="text-emerald-600 font-semibold inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            Команда в работе
+            В работе
           </span>
           {% else %}
-          <span class="text-slate-400">
-            Рейтинг ТЗ: {{ task.rating }}/100
+          <span class="text-zinc-400">
+            Готовность: {{ task.rating }}/100
           </span>
           {% endif %}
 
           <a href="/catalog" 
-             class="inline-flex items-center gap-1.5 font-bold text-indigo-600 hover:text-indigo-800 transition">
-            <span>Перейти к задаче</span>
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+             title="Перейти к задаче в общем каталоге"
+             class="inline-flex items-center gap-1 font-semibold text-zinc-900 hover:text-zinc-600 transition">
+            <span>В каталог</span>
+            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </a>
         </div>
@@ -459,7 +295,6 @@
       </div>
       {% endfor %}
     </div>
-
   </div>
 
 </div>

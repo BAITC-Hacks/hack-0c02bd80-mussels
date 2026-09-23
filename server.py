@@ -302,6 +302,42 @@ def get_student_cabinet_data(team_id: Optional[str] = None) -> Dict[str, Any]:
     completed_count = len(completed_milestones)
     potential_xp = sum(m.get("points", 0) for m in in_progress_milestones)
 
+    # Group milestones by project: Project -> Completed -> In Progress
+    projects_dict = {}
+    for cm in completed_milestones:
+        tid = cm.get("task_id")
+        if tid not in projects_dict:
+            projects_dict[tid] = {
+                "task_id": tid,
+                "task_title": cm.get("task_title"),
+                "task_industry": cm.get("task_industry"),
+                "task_type": cm.get("task_type"),
+                "earned_xp": 0,
+                "potential_xp": 0,
+                "completed_milestones": [],
+                "in_progress_milestones": [],
+            }
+        projects_dict[tid]["completed_milestones"].append(cm)
+        projects_dict[tid]["earned_xp"] += cm.get("points", 0)
+
+    for ipm in in_progress_milestones:
+        tid = ipm.get("task_id")
+        if tid not in projects_dict:
+            projects_dict[tid] = {
+                "task_id": tid,
+                "task_title": ipm.get("task_title"),
+                "task_industry": ipm.get("task_industry"),
+                "task_type": ipm.get("task_type"),
+                "earned_xp": 0,
+                "potential_xp": 0,
+                "completed_milestones": [],
+                "in_progress_milestones": [],
+            }
+        projects_dict[tid]["in_progress_milestones"].append(ipm)
+        projects_dict[tid]["potential_xp"] += ipm.get("points", 0)
+
+    project_milestones = list(projects_dict.values())
+
     recommended_tasks = []
     for task in tasks:
         score, explanation = calculate_recommendation_score(selected_team, task)
@@ -325,6 +361,7 @@ def get_student_cabinet_data(team_id: Optional[str] = None) -> Dict[str, Any]:
         },
         "completed_milestones": completed_milestones,
         "in_progress_milestones": in_progress_milestones,
+        "project_milestones": project_milestones,
         "recommended_tasks": recommended_tasks
     }
 
@@ -343,6 +380,7 @@ async def student_page(request: Request, team_id: Optional[str] = None):
             "stats": data["stats"],
             "completed_milestones": data["completed_milestones"],
             "in_progress_milestones": data["in_progress_milestones"],
+            "project_milestones": data["project_milestones"],
             "recommended_tasks": data["recommended_tasks"],
         }
     )
