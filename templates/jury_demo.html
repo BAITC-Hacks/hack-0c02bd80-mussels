@@ -22,20 +22,10 @@
 
     <!-- Quick Action Toolbar -->
     <div class="flex items-center gap-3 shrink-0">
-      <button type="button"
-              @click="resetData()"
-              :disabled="isResetting"
-              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 active:scale-[0.98] transition shadow-[0_1px_2px_rgba(0,0,0,0.03)] disabled:opacity-50">
-        <svg class="w-3.5 h-3.5 text-zinc-400" :class="{'animate-spin': isResetting}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        <span x-text="isResetting ? 'Сброс...' : 'Сброс данных к эталону'">Сброс данных к эталону</span>
-      </button>
-
       <a href="/constructor" 
-         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm">
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] transition shadow-xs">
         <span>Начать сценарий</span>
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
       </a>
@@ -45,73 +35,73 @@
   <!-- Quick Navigation Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
     <a href="/constructor" 
-       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+       class="group bg-white p-5 rounded-xl border border-zinc-200/90 shadow-xs hover:border-zinc-400 transition">
       <div class="flex items-center justify-between mb-3">
-        <span class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+        <span class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-sm">
           01
         </span>
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </div>
-      <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition mb-1">
+      <h3 class="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition mb-1">
         Конструктор задачи
       </h3>
-      <p class="text-xs text-slate-500">
+      <p class="text-xs text-zinc-500">
         Ввод черновика, AI-диалог, расчет спидометра готовности и синтез ТЗ.
       </p>
     </a>
 
     <a href="/catalog" 
-       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+       class="group bg-white p-5 rounded-xl border border-zinc-200/90 shadow-xs hover:border-zinc-400 transition">
       <div class="flex items-center justify-between mb-3">
-        <span class="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+        <span class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-sm">
           02
         </span>
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </div>
-      <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition mb-1">
+      <h3 class="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition mb-1">
         Общий каталог
       </h3>
-      <p class="text-xs text-slate-500">
+      <p class="text-xs text-zinc-500">
         Открытый пул подтвержденных задач с сортировкой по рейтингу и живой фильтрацией.
       </p>
     </a>
 
     <a href="/student" 
-       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+       class="group bg-white p-5 rounded-xl border border-zinc-200/90 shadow-xs hover:border-zinc-400 transition">
       <div class="flex items-center justify-between mb-3">
-        <span class="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">
+        <span class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-sm">
           03
         </span>
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </div>
-      <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition mb-1">
+      <h3 class="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition mb-1">
         Кабинет студента
       </h3>
-      <p class="text-xs text-slate-500">
+      <p class="text-xs text-zinc-500">
         Баланс очков XP, реестр выполненных этапов и персональные AI-рекомендации.
       </p>
     </a>
 
     <a href="/business" 
-       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+       class="group bg-white p-5 rounded-xl border border-zinc-200/90 shadow-xs hover:border-zinc-400 transition">
       <div class="flex items-center justify-between mb-3">
-        <span class="w-10 h-10 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
+        <span class="w-10 h-10 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-sm">
           04
         </span>
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </div>
-      <h3 class="text-base font-bold text-slate-900 group-hover:text-purple-600 transition mb-1">
+      <h3 class="text-base font-bold text-zinc-900 group-hover:text-zinc-600 transition mb-1">
         Кабинет бизнеса
       </h3>
-      <p class="text-xs text-slate-500">
+      <p class="text-xs text-zinc-500">
         Ручной отбор команд (ADR-0003), интерактивная шкала этапов и начисление +XP.
       </p>
     </a>

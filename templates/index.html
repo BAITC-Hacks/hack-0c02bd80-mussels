@@ -7,10 +7,6 @@
 
   <!-- Header Banner -->
   <div class="mb-8">
-    <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/80 mb-3">
-      <span class="w-1.5 h-1.5 rounded-full bg-zinc-900"></span>
-      <span>Модуль 01: Конструктор</span>
-    </div>
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
@@ -92,17 +88,17 @@
     
     <!-- Left Column: Form -->
     <div class="lg:col-span-8 space-y-6">
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sm:p-8">
-        <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+      <div class="bg-white border border-zinc-200/90 rounded-xl shadow-xs p-6 sm:p-8">
+        <div class="flex items-center justify-between pb-4 mb-6 border-b border-zinc-100">
           <div>
-            <h2 class="text-lg font-bold text-slate-900">
+            <h2 class="text-lg font-bold text-zinc-900">
               Первичная потребность бизнеса
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="text-xs text-zinc-500 mt-0.5">
               Сформулируйте суть задачи свободным текстом, выберите контекст отрасли и направление разработки
             </p>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200/60">
             Шаг 1 из 3
           </span>
         </div>
@@ -110,39 +106,39 @@
         <form @submit.prevent="startDialogue()" class="space-y-6">
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label for="draft_text" class="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+              <label for="draft_text" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600">
                 Краткое описание черновика
               </label>
-              <span class="text-xs text-slate-400" x-text="(draft_text || '').length + ' симв.'"></span>
+              <span class="text-xs text-zinc-400" x-text="(draft_text || '').length + ' симв.'"></span>
             </div>
             <textarea id="draft_text"
                       rows="4" 
                       x-model="draft_text"
                       placeholder="Опишите, какую проблему или задачу необходимо решить студенческой команде..." 
-                      class="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 placeholder-slate-400 transition"
+                      class="w-full px-4 py-3 text-sm rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none text-zinc-900 placeholder-zinc-400 transition"
                       required></textarea>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label for="industry" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <label for="industry" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
                 Отрасль бизнеса
               </label>
               <select id="industry"
                       x-model="industry"
-                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 transition">
+                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none text-zinc-900 transition">
                 {% for ind in industry_options %}
                 <option value="{{ ind }}">{{ ind }}</option>
                 {% endfor %}
               </select>
             </div>
             <div>
-              <label for="task_type" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <label for="task_type" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
                 Направление задачи
               </label>
               <select id="task_type"
                       x-model="task_type"
-                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 transition">
+                      class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none text-zinc-900 transition">
                 {% for tt in task_type_options %}
                 <option value="{{ tt }}">{{ tt }}</option>
                 {% endfor %}
@@ -151,8 +147,8 @@
           </div>
 
           <!-- Bottom Form Actions -->
-          <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2 text-xs text-slate-500">
+          <div class="pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-xs text-zinc-500">
               <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -177,11 +173,11 @@
 
     <!-- Right Column: Rating Gauge & Metrics Preview -->
     <div class="lg:col-span-4 space-y-6">
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+      <div class="bg-white border border-zinc-200/90 rounded-xl shadow-xs p-6 text-center">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
           Рейтинг готовности
         </h3>
-        <p class="text-xs text-slate-400 mb-4">
+        <p class="text-xs text-zinc-400 mb-4">
           Прогнозируемая оценка по критериям платформы
         </p>
 
@@ -198,7 +194,7 @@
               <!-- 240 degree background track -->
               <circle cx="75" cy="71" r="59"
                       fill="none"
-                      stroke="#e2e8f0"
+                      stroke="#f4f4f5"
                       stroke-width="11"
                       stroke-dasharray="247.14 370.71"
                       stroke-linecap="round"
@@ -214,55 +210,55 @@
                       class="transition-all duration-500" />
               <!-- Labels -->
               <text x="24" y="124" text-anchor="middle" dominant-baseline="middle"
-                    fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">0</text>
+                    fill="#a1a1aa" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">0</text>
               <text x="126" y="124" text-anchor="middle" dominant-baseline="middle"
-                    fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">100</text>
+                    fill="#a1a1aa" font-family="system-ui, sans-serif" font-size="11px" font-weight="700">100</text>
               <!-- Score value -->
               <text x="75" y="66" text-anchor="middle" dominant-baseline="middle"
-                    fill="#0f172a" font-family="system-ui, sans-serif" font-size="40px" font-weight="800">
+                    fill="#18181b" font-family="system-ui, sans-serif" font-size="40px" font-weight="800">
                 <tspan x-text="draft_text.trim().length > 30 ? '10' : '0'">0</tspan>
               </text>
               <text x="75" y="92" text-anchor="middle" dominant-baseline="middle"
-                    fill="#64748b" font-family="system-ui, sans-serif" font-size="12px" font-weight="600">
+                    fill="#71717a" font-family="system-ui, sans-serif" font-size="12px" font-weight="600">
                 из 100 баллов
               </text>
             </svg>
           </div>
         </div>
 
-        <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200 mb-3">
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 mb-3">
           Черновик задачи
         </div>
 
-        <p class="text-xs text-slate-500 leading-relaxed">
+        <p class="text-xs text-zinc-500 leading-relaxed">
           Заполняйте поля карточки и отвечайте на вопросы AI, чтобы повысить рейтинг до уровня «Готовая» или «Приоритетная».
         </p>
 
         <!-- 4-level scale legend -->
-        <div class="mt-6 pt-4 border-t border-slate-100 text-left space-y-2 text-xs">
-          <div class="flex items-center justify-between text-slate-600">
+        <div class="mt-6 pt-4 border-t border-zinc-100 text-left space-y-2 text-xs">
+          <div class="flex items-center justify-between text-zinc-600">
             <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Приоритетная
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Приоритетная
             </span>
-            <span class="font-bold text-slate-700">90-100</span>
+            <span class="font-bold text-zinc-700">90-100</span>
           </div>
-          <div class="flex items-center justify-between text-slate-600">
+          <div class="flex items-center justify-between text-zinc-600">
             <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Готовая
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span> Готовая
             </span>
-            <span class="font-bold text-slate-700">70-89</span>
+            <span class="font-bold text-zinc-700">70-89</span>
           </div>
-          <div class="flex items-center justify-between text-slate-600">
+          <div class="flex items-center justify-between text-zinc-600">
             <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Рабочая
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span> Рабочая
             </span>
-            <span class="font-bold text-slate-700">40-69</span>
+            <span class="font-bold text-zinc-700">40-69</span>
           </div>
-          <div class="flex items-center justify-between text-slate-600">
+          <div class="flex items-center justify-between text-zinc-600">
             <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Черновик
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span> Черновик
             </span>
-            <span class="font-bold text-slate-700">0-39</span>
+            <span class="font-bold text-zinc-700">0-39</span>
           </div>
         </div>
       </div>
