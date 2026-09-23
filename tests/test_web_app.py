@@ -369,6 +369,60 @@ def test_student_team_switching(client):
     assert "70" in content3  # 70 XP
 
 
+def test_jury_demo_page_content_and_steps(client):
+    response = client.get("/jury-demo")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    content = response.text
+
+    assert "Экспресс-демонстрация" in content
+    # 5 Key Steps
+    assert "Шаг 1" in content
+    assert "Первичная потребность" in content or "эталонный черновик" in content
+    assert "Шаг 2" in content
+    assert "диалог с AI" in content or "AI-интервью" in content
+    assert "Шаг 3" in content
+    assert "Синтез карточки" in content or "рейтинга готовности" in content or "спидометр" in content
+    assert "Шаг 4" in content
+    assert "Общий каталог" in content or "рекомендации студентам" in content
+    assert "Шаг 5" in content
+    assert "Кабинет бизнеса" in content or "ручной выбор" in content or "контрольных этапов" in content
+
+    # Quick links to modules
+    assert 'href="/constructor"' in content or 'href="/"' in content
+    assert 'href="/catalog"' in content
+    assert 'href="/student"' in content
+    assert 'href="/business"' in content
+
+    # Architectural Memo
+    assert "Clean Tech White" in content or "чистая белая" in content.lower()
+    assert "ADR-0003" in content or "запрет автоназначения" in content.lower()
+    assert "двухрежим" in content.lower() or "локальный движок" in content.lower() or "openai" in content.lower()
+    assert "XP" in content or "баллы прогресса" in content.lower()
+
+    # Reset Data Action
+    assert "/api/reset-data" in content or "Сброс данных" in content
+
+
+def test_demo_redirect(client):
+    response = client.get("/demo", follow_redirects=False)
+    assert response.status_code == 302
+    assert response.headers["location"] == "/jury-demo"
+
+
+def test_run_web_script():
+    import os
+    script_path = Path(__file__).resolve().parent.parent / "run_web.sh"
+    assert script_path.exists(), "run_web.sh must exist in repository root"
+    assert os.access(script_path, os.X_OK), "run_web.sh must be executable"
+    content = script_path.read_text(encoding="utf-8")
+    assert "uvicorn" in content
+    assert "8000" in content
+    assert "server:app" in content
+    assert "venv" in content
+    assert "http://localhost:8000" in content
+
+
 def test_no_emojis_in_web_code():
     emoji_pattern = re.compile(
         "["
@@ -387,7 +441,11 @@ def test_no_emojis_in_web_code():
     )
 
     base_dir = Path(__file__).resolve().parent.parent
-    files_to_check = [base_dir / "server.py", Path(__file__)]
+    files_to_check = [
+        base_dir / "server.py",
+        base_dir / "run_web.sh",
+        Path(__file__)
+    ]
     templates_dir = base_dir / "templates"
     if templates_dir.exists():
         files_to_check.extend(templates_dir.rglob("*.html"))
@@ -397,5 +455,6 @@ def test_no_emojis_in_web_code():
             text = file_path.read_text(encoding="utf-8")
             matches = emoji_pattern.findall(text)
             assert not matches, f"Emoji found in {file_path}: {matches}"
+
 
 

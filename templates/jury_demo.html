@@ -1,26 +1,537 @@
 {% extends "base.html" %}
 
-{% block title %}Демо жюри | AI Sana{% endblock %}
+{% block title %}Демо жюри | AI Sana — Экспресс-демонстрация платформы{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-  <div class="mb-8">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-3">
-      Модуль 05: Экспресс-демонстрация
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="juryDemoApp()">
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-2">
+        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        Экспресс-демонстрация для жюри
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        Сквозной сценарий платформы за 3 минуты
+      </h1>
+      <p class="mt-2 text-base text-slate-600 max-w-3xl">
+        Интерактивный путеводитель по ключевым этапам жизненного цикла задачи: от слабого черновика до начисления баллов прогресса (XP).
+      </p>
     </div>
-    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-      Экспресс-демонстрация для жюри
-    </h1>
-    <p class="mt-2 text-base text-slate-600 max-w-3xl">
-      Сквозной сценарий платформы от первичного черновика до начисления баллов прогресса за 3 минуты.
-    </p>
+
+    <!-- Quick Action Toolbar -->
+    <div class="flex items-center gap-3 shrink-0">
+      <button type="button"
+              @click="resetData()"
+              :disabled="isResetting"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100 transition shadow-sm disabled:opacity-50">
+        <svg class="w-4 h-4 text-slate-500" :class="{'animate-spin': isResetting}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span x-text="isResetting ? 'Сброс...' : 'Сброс данных к эталону'">Сброс данных к эталону</span>
+      </button>
+
+      <a href="/constructor" 
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm">
+        <span>Начать сценарий</span>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </a>
+    </div>
   </div>
 
-  <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-12 text-center">
-    <h3 class="text-lg font-semibold text-slate-800 mb-2">Раздел экспресс-демонстрации в разработке</h3>
-    <p class="text-sm text-slate-500 max-w-md mx-auto">
-      Раздел будет реализован в рамках Тикета 06 с пошаговым интерактивным гидом по сценарию хакатона.
-    </p>
+  <!-- Quick Navigation Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+    <a href="/constructor" 
+       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+      <div class="flex items-center justify-between mb-3">
+        <span class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+          01
+        </span>
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition mb-1">
+        Конструктор задачи
+      </h3>
+      <p class="text-xs text-slate-500">
+        Ввод черновика, AI-диалог, расчет спидометра готовности и синтез ТЗ.
+      </p>
+    </a>
+
+    <a href="/catalog" 
+       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+      <div class="flex items-center justify-between mb-3">
+        <span class="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+          02
+        </span>
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition mb-1">
+        Общий каталог
+      </h3>
+      <p class="text-xs text-slate-500">
+        Открытый пул подтвержденных задач с сортировкой по рейтингу и живой фильтрацией.
+      </p>
+    </a>
+
+    <a href="/student" 
+       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+      <div class="flex items-center justify-between mb-3">
+        <span class="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">
+          03
+        </span>
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition mb-1">
+        Кабинет студента
+      </h3>
+      <p class="text-xs text-slate-500">
+        Баланс очков XP, реестр выполненных этапов и персональные AI-рекомендации.
+      </p>
+    </a>
+
+    <a href="/business" 
+       class="group bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 hover:shadow-md transition">
+      <div class="flex items-center justify-between mb-3">
+        <span class="w-10 h-10 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
+          04
+        </span>
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 group-hover:text-purple-600 transition mb-1">
+        Кабинет бизнеса
+      </h3>
+      <p class="text-xs text-slate-500">
+        Ручной отбор команд (ADR-0003), интерактивная шкала этапов и начисление +XP.
+      </p>
+    </a>
   </div>
+
+  <!-- 5-Step Interactive Guided Walkthrough -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-12">
+    <div class="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Сквозной сценарий</span>
+          <h2 class="text-2xl font-bold text-slate-900 mt-1">
+            5 шагов демонстрации (3 минуты)
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">
+            Кликните по шагу для просмотра контрольных точек, критериев оценки и быстрого перехода к проверке.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button"
+                  @click="activeStep = (activeStep > 1 ? activeStep - 1 : 5)"
+                  class="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <span class="text-xs font-semibold text-slate-700 px-2" x-text="`Шаг ${activeStep} из 5`"></span>
+          <button type="button"
+                  @click="activeStep = (activeStep < 5 ? activeStep + 1 : 1)"
+                  class="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step Indicators Tab Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-6">
+        <template x-for="step in steps" :key="step.number">
+          <button type="button"
+                  @click="activeStep = step.number"
+                  class="flex items-center gap-2 p-2.5 rounded-xl border text-left transition"
+                  :class="activeStep === step.number 
+                          ? 'bg-white border-indigo-500 text-indigo-700 shadow-sm ring-1 ring-indigo-500' 
+                          : 'bg-white/60 border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300'">
+            <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0"
+                  :class="activeStep === step.number ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'"
+                  x-text="step.number">
+            </span>
+            <span class="text-xs font-medium truncate" x-text="step.shortTitle"></span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- Active Step Details Card -->
+    <div class="p-6 sm:p-8">
+      
+      <!-- Step 1 Details -->
+      <div x-show="activeStep === 1" x-cloak class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+              <span>Этап 1</span>
+              <span>•</span>
+              <span>Старт от бизнеса</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Шаг 1: Первичная потребность бизнеса и эталонный черновик
+            </h3>
+            <p class="text-sm text-slate-600 mt-2 max-w-3xl">
+              Представитель бизнеса формулирует задачу простым языком без жестких требований к структуре. Для мгновенного демо предусмотрена кнопка загрузки эталонного кейса в один клик.
+            </p>
+          </div>
+          <a href="/constructor" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shrink-0">
+            <span>Открыть Конструктор</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Что демонстрируется:</div>
+            <p class="text-xs text-slate-600">
+              Ввод неструктурированного текста («Нужен умный чат-бот для поддержки клиентов...»), выбор отрасли («Ритейл») и направления задачи.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Удобство для спикера:</div>
+            <p class="text-xs text-slate-600">
+              Кнопка «Заполнить эталонный черновик» автоматически заполняет форму готовыми данными, исключая задержки на ручной набор текста.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Стартовый рейтинг:</div>
+            <p class="text-xs text-slate-600">
+              Начальный уровень готовности составляет всего 20–30 баллов («Черновик»), наглядно иллюстрируя нехватку информации для студентов.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 Details -->
+      <div x-show="activeStep === 2" x-cloak class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+              <span>Этап 2</span>
+              <span>•</span>
+              <span>Интеллектуальное интервью</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Шаг 2: Пошаговый диалог с AI (Адаптивные вопросы и быстрые ответы)
+            </h3>
+            <p class="text-sm text-slate-600 mt-2 max-w-3xl">
+              AI-генератор анализирует сырой черновик, выявляет критические пробелы в ТЗ и задает серию из 3–6 целевых вопросов (о данных, критериях успеха, ограничениях и контактах).
+            </p>
+          </div>
+          <a href="/constructor" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shrink-0">
+            <span>Перейти к диалогу</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Адаптивный алгоритм:</div>
+            <p class="text-xs text-slate-600">
+              Каждый следующий вопрос целенаправленно закрывает незаполненные поля ТЗ (field_target: данные, метрики, ограничения, стейкхолдеры).
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Быстрый ответ для жюри:</div>
+            <p class="text-xs text-slate-600">
+              Кнопка «Быстрый ответ для жюри» подставляет релевантный технический ответ без необходимости печатать вручную во время тайминга.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Прозрачность процесса:</div>
+            <p class="text-xs text-slate-600">
+              История отвеченных вопросов наглядно отображает логику доработки требований от общего желания к инженерной спецификации.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 Details -->
+      <div x-show="activeStep === 3" x-cloak class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+              <span>Этап 3</span>
+              <span>•</span>
+              <span>Синтез и скоринг</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Шаг 3: Синтез карточки задачи и расчет объективного рейтинга готовности
+            </h3>
+            <p class="text-sm text-slate-600 mt-2 max-w-3xl">
+              По завершении диалога формируется итоговая структурированная карточка задачи, а движок скоринга рассчитывает балл готовности на спидометре 0–100 по открытой формуле весов.
+            </p>
+          </div>
+          <a href="/catalog" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shrink-0">
+            <span>Проверить в каталоге</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Круговой спидометр 0–100:</div>
+            <p class="text-xs text-slate-600">
+              Визуализация на чистом SVG без внешних библиотек. Рост рейтинга с 20 до 95 баллов переводит задачу в категорию «Приоритетная».
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Формула весов:</div>
+            <p class="text-xs text-slate-600">
+              Контекст (20) + Данные (20) + Результат (15) + Критерии (15) + Ограничения (10) + Пользователи (10) + Контакты (10) = 100 баллов.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Генерация этапов (Milestones):</div>
+            <p class="text-xs text-slate-600">
+              Система автоматически генерирует 3 контрольных этапа разработки с привязанными баллами прогресса (25 + 35 + 40 = 100 XP).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 Details -->
+      <div x-show="activeStep === 4" x-cloak class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+              <span>Этап 4</span>
+              <span>•</span>
+              <span>Каталог и рекомендации</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Шаг 4: Общий каталог задач и умные рекомендации студентам
+            </h3>
+            <p class="text-sm text-slate-600 mt-2 max-w-3xl">
+              Студенты видят открытый каталог задач, отсортированный строго по готовности. В кабинете команды персональные рекомендации рассчитываются многомерным AI-алгоритмом.
+            </p>
+          </div>
+          <a href="/student" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shrink-0">
+            <span>Кабинет студента</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Открытость пула:</div>
+            <p class="text-xs text-slate-600">
+              Все задачи доступны всем командам. Сортировка по готовности стимулирует бизнес повышать качество описаний задач.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Многомерный мэтчинг:</div>
+            <p class="text-xs text-slate-600">
+              40% доменное соответствие (Retail, FinTech), 40% инженерный стек (NLP, Backend, ML) и 20% уровень готовности ТЗ.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">AI-объяснение:</div>
+            <p class="text-xs text-slate-600">
+              Каждая рекомендация сопровождается текстовым обоснованием от AI, почему именно эта задача подходит профилю команды.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 Details -->
+      <div x-show="activeStep === 5" x-cloak class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">
+              <span>Этап 5</span>
+              <span>•</span>
+              <span>Бизнес и начисление XP</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">
+              Шаг 5: Кабинет бизнеса, ручной выбор команды и подтверждение контрольных этапов
+            </h3>
+            <p class="text-sm text-slate-600 mt-2 max-w-3xl">
+              Представитель бизнеса лично просматривает отклики команд, выбирает исполнителя и подтверждает выполнение этапов разработки с мгновенным начислением баллов прогресса (+XP).
+            </p>
+          </div>
+          <a href="/business" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition shrink-0">
+            <span>Кабинет бизнеса</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Запрет автоназначения:</div>
+            <p class="text-xs text-slate-600">
+              Строгое соблюдение архитектурного принципа ADR-0003: только человек принимает решение о сотрудничестве по кнопке «Выбрать команду».
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Шкала контрольных этапов:</div>
+            <p class="text-xs text-slate-600">
+              Наглядный мониторинг («1 из 3 этапов завершено (33%)», «25 / 100 XP начислено») с пошаговыми точками контроля.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-700 mb-1">Мгновенное начисление XP:</div>
+            <p class="text-xs text-slate-600">
+              Кнопка «Подтвердить этап (+XP)» моментально обновляет шкалу бизнеса и баланс очков в профиле команды без перезагрузки страницы.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Architectural Memo for Jury (Памятка для жюри) -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-12">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">
+          Памятка для жюри: Ключевые архитектурные решения
+        </h2>
+        <p class="text-xs text-slate-500">
+          Принципы надежности, честности и технологической зрелости платформы AI Sana
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Value 1 -->
+      <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-indigo-200 transition">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+            1
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">
+            Чистая белая архитектура (Clean Tech White)
+          </h4>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Автономное веб-приложение на FastAPI + Tailwind CSS исключает конфликты тем оформления (Dark Mode), обеспечивает стабильную контрастность и отзывчивый интерфейс с нулевым оверхедом сборки.
+        </p>
+      </div>
+
+      <!-- Value 2 -->
+      <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-indigo-200 transition">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+            2
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">
+            Строгий запрет автоназначения команд (ADR-0003)
+          </h4>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Искусственный интеллект лишь рекомендует и сопоставляет компетенции. Решение о партнерстве всегда принимает бизнес лично, гарантируя доверие и открытость соревновательного процесса.
+        </p>
+      </div>
+
+      <!-- Value 3 -->
+      <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-indigo-200 transition">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+            3
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">
+            Двухрежимный AI-движок с локальным фоллбэком
+          </h4>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Основной режим работает через OpenAI API, а резервный локальный генератор (Local Fallback) гарантирует 100% стабильность демонстрации и синтеза карточек даже без доступа к сети или при отсутствии API-ключа.
+        </p>
+      </div>
+
+      <!-- Value 4 -->
+      <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-indigo-200 transition">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+            4
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">
+            Честная шкала рейтинга и прозрачная геймификация XP
+          </h4>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Рейтинг готовности задачи (0–100) рассчитывается строго аддитивно по подтвержденным блокам ТЗ. Контрольные этапы связывают бизнес-приемку с мгновенным начислением баллов прогресса студентам.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reset State Banner -->
+  <div class="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="max-w-2xl">
+      <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 mb-2">
+        Быстрый перезапуск
+      </div>
+      <h3 class="text-lg font-bold">Готовы повторить демонстрацию с чистого листа?</h3>
+      <p class="text-xs text-slate-300 mt-1">
+        Кнопка мгновенного сброса восстанавливает эталонное состояние данных: 5 исходных черновиков, 5 полных карточек задач, 5 профилей команд и контрольные этапы.
+      </p>
+    </div>
+    <button type="button"
+            @click="resetData()"
+            :disabled="isResetting"
+            class="px-5 py-3 rounded-xl bg-white text-slate-900 font-bold text-sm hover:bg-slate-100 active:bg-slate-200 transition shadow-sm shrink-0 flex items-center gap-2 disabled:opacity-50">
+      <svg class="w-4 h-4 text-slate-700" :class="{'animate-spin': isResetting}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      <span x-text="isResetting ? 'Сброс...' : 'Сброс данных (POST /api/reset-data)'">Сброс данных (POST /api/reset-data)</span>
+    </button>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function juryDemoApp() {
+    return {
+      activeStep: 1,
+      steps: [
+        { number: 1, shortTitle: 'Черновик' },
+        { number: 2, shortTitle: 'AI-диалог' },
+        { number: 3, shortTitle: 'Синтез и рейтинг' },
+        { number: 4, shortTitle: 'Каталог' },
+        { number: 5, shortTitle: 'Выбор и XP' }
+      ]
+    };
+  }
+</script>
 {% endblock %}
