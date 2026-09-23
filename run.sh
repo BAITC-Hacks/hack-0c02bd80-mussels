@@ -1,3 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-"$DIR/venv/bin/streamlit" run "$DIR/app.py" --server.port 8501
+exec "$DIR/run_web.sh" "$@"
