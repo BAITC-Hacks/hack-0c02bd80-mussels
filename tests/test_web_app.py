@@ -304,6 +304,71 @@ def test_proposal_status_update_endpoint(client):
     assert reject_data.get("proposal")["review_comment"] == "Стек не соответствует требованиям"
 
 
+def test_student_page_renders_team_profile_and_xp_summary(client):
+    from server import storage
+    storage.reset_all_data()
+
+    response = client.get("/student")
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "")
+    content = response.text
+    assert "Кабинет студенческой команды" in content
+    # Default team
+    assert "NeuralMinds" in content
+    # XP Stats
+    assert "125" in content  # Team 001 points
+    assert "XP" in content
+    # Milestones ledger
+    assert "Архитектура микросервиса" in content
+    assert "+25 XP" in content or "25 XP" in content
+    # In-progress milestone
+    assert "Финальный деплой веб-виджета" in content
+    # Recommendations block
+    assert "Персональные AI-рекомендации" in content or "AI-рекомендации" in content
+    assert "Совпадение 100%" in content or "100%" in content
+    assert "доменное соответствие" in content
+    assert "Перейти к задаче" in content or "В каталог" in content or "/catalog" in content
+
+
+def test_student_recommendation_calculation(client):
+    from server import storage
+    from services.recommendation import calculate_recommendation_score
+    storage.reset_all_data()
+
+    team_1 = storage.get_team_by_id("team-001")
+    task_1 = storage.get_task_by_id("task-001")
+    score_1, reason_1 = calculate_recommendation_score(team_1, task_1)
+    assert score_1 == 100
+    assert "доменное соответствие" in reason_1
+    assert "профиль компетенций" in reason_1
+
+    team_2 = storage.get_team_by_id("team-002")
+    task_2 = storage.get_task_by_id("task-002")
+    score_2, reason_2 = calculate_recommendation_score(team_2, task_2)
+    assert score_2 >= 90
+    assert "доменное соответствие" in reason_2
+
+
+def test_student_team_switching(client):
+    from server import storage
+    storage.reset_all_data()
+
+    # Switch to team-002 (DataCrafters)
+    resp2 = client.get("/student?team_id=team-002")
+    assert resp2.status_code == 200
+    content2 = resp2.text
+    assert "DataCrafters" in content2
+    assert "95" in content2  # 95 XP
+    assert "CatBoost" in content2 or "Финтех" in content2
+
+    # Switch to team-003 (EdTech Innovators)
+    resp3 = client.get("/student?team_id=team-003")
+    assert resp3.status_code == 200
+    content3 = resp3.text
+    assert "EdTech Innovators" in content3
+    assert "70" in content3  # 70 XP
+
+
 def test_no_emojis_in_web_code():
     emoji_pattern = re.compile(
         "["
@@ -332,4 +397,5 @@ def test_no_emojis_in_web_code():
             text = file_path.read_text(encoding="utf-8")
             matches = emoji_pattern.findall(text)
             assert not matches, f"Emoji found in {file_path}: {matches}"
+
 

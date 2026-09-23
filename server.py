@@ -222,14 +222,128 @@ def get_business_cabinet_data() -> List[Dict[str, Any]]:
     return enriched_tasks
 
 
+from services.recommendation import calculate_recommendation_score
+
+
+def format_iso_date(dt_str: Optional[str]) -> str:
+    if not dt_str:
+        return ""
+    try:
+        dt = datetime.fromisoformat(dt_str)
+        return dt.strftime("%d.%m.%Y, %H:%M")
+    except Exception:
+        return dt_str
+
+
+def get_student_cabinet_data(team_id: Optional[str] = None) -> Dict[str, Any]:
+    teams = storage.load_teams()
+    if not teams:
+        return {
+            "teams": [],
+            "selected_team": {},
+            "stats": {"total_earned_xp": 0, "completed_count": 0, "potential_xp": 0},
+            "completed_milestones": [],
+            "in_progress_milestones": [],
+            "recommended_tasks": []
+        }
+
+    selected_team = next((t for t in teams if t.get("id") == team_id), None)
+    if not selected_team:
+        selected_team = teams[0]
+
+    tasks = storage.load_tasks()
+    all_milestones = storage.load_milestones()
+    all_proposals = storage.load_proposals()
+
+    tasks_map = {t["id"]: t for t in tasks}
+
+    team_proposals = [p for p in all_proposals if p.get("team_id") == selected_team["id"]]
+    accepted_task_ids = {p.get("task_id") for p in team_proposals if p.get("status") == "accepted"}
+
+    completed_ms_ids = set(selected_team.get("completed_milestones", []))
+    completed_milestones = []
+    seen_completed = set()
+
+    for m in all_milestones:
+        m_id = m.get("id")
+        is_completed = (m.get("status") == "completed")
+        is_team_completed = (m.get("team_id") == selected_team["id"] or m_id in completed_ms_ids)
+        if is_completed and is_team_completed and m_id not in seen_completed:
+            seen_completed.add(m_id)
+            task = tasks_map.get(m.get("task_id"), {})
+            completed_milestones.append({
+                **m,
+                "task_title": task.get("title", f"Задача {m.get('task_id')}"),
+                "task_industry": task.get("industry", ""),
+                "task_type": task.get("task_type", ""),
+                "formatted_date": format_iso_date(m.get("completed_at")),
+            })
+
+    completed_milestones.sort(key=lambda x: x.get("completed_at") or "", reverse=True)
+
+    in_progress_milestones = []
+    seen_in_progress = set()
+    for m in all_milestones:
+        m_id = m.get("id")
+        if m.get("status") != "completed" and m_id not in seen_in_progress:
+            is_team_ms = (m.get("team_id") == selected_team["id"])
+            is_accepted_executor = (m.get("task_id") in accepted_task_ids and (not m.get("team_id") or m.get("team_id") == selected_team["id"]))
+            if is_team_ms or is_accepted_executor:
+                seen_in_progress.add(m_id)
+                task = tasks_map.get(m.get("task_id"), {})
+                in_progress_milestones.append({
+                    **m,
+                    "task_title": task.get("title", f"Задача {m.get('task_id')}"),
+                    "task_industry": task.get("industry", ""),
+                    "task_type": task.get("task_type", "")
+                })
+
+    total_earned_xp = selected_team.get("progress_points", 0)
+    completed_count = len(completed_milestones)
+    potential_xp = sum(m.get("points", 0) for m in in_progress_milestones)
+
+    recommended_tasks = []
+    for task in tasks:
+        score, explanation = calculate_recommendation_score(selected_team, task)
+        recommended_tasks.append({
+            **task,
+            "compact_gauge_html": render_circular_gauge(task.get("rating", 0), size=60, compact=True),
+            "match_score": score,
+            "recommendation_explanation": explanation,
+            "is_executor": task.get("id") in accepted_task_ids
+        })
+
+    recommended_tasks.sort(key=lambda t: (t.get("match_score", 0), t.get("rating", 0)), reverse=True)
+
+    return {
+        "teams": teams,
+        "selected_team": selected_team,
+        "stats": {
+            "total_earned_xp": total_earned_xp,
+            "completed_count": completed_count,
+            "potential_xp": potential_xp,
+        },
+        "completed_milestones": completed_milestones,
+        "in_progress_milestones": in_progress_milestones,
+        "recommended_tasks": recommended_tasks
+    }
+
+
 @app.api_route("/student", methods=["GET", "HEAD"], response_class=HTMLResponse)
-async def student_page(request: Request):
+async def student_page(request: Request, team_id: Optional[str] = None):
+    data = get_student_cabinet_data(team_id=team_id)
     return templates.TemplateResponse(
         request=request,
         name="student.html",
         context={
             "current_route": "/student",
             "ai_status": get_ai_status(),
+            "teams": data["teams"],
+            "selected_team": data["selected_team"],
+            "stats": data["stats"],
+            "completed_milestones": data["completed_milestones"],
+            "in_progress_milestones": data["in_progress_milestones"],
+            "recommended_tasks": data["recommended_tasks"],
         }
     )
 
