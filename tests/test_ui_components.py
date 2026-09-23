@@ -119,3 +119,26 @@ def test_xp_summary():
     assert "2" in summary_html
     assert "+40 XP" in summary_html
     assert not EMOJI_REGEX.search(summary_html)
+
+
+def test_prototype_variants_and_switcher():
+    from services.ui_components import VARIANT_CONFIGS, render_prototype_switcher
+
+    assert "A" in VARIANT_CONFIGS
+    assert "B" in VARIANT_CONFIGS
+    assert "C" in VARIANT_CONFIGS
+
+    for v_code in ["A", "B", "C"]:
+        switcher_html = render_prototype_switcher(v_code)
+        assert f"?variant=" in switcher_html
+        assert not EMOJI_REGEX.search(switcher_html)
+
+        gauge_b = render_circular_gauge(85, size=140, variant=v_code)
+        assert "<svg" in gauge_b
+        assert not EMOJI_REGEX.search(gauge_b)
+
+        m_progress = render_milestone_progress([
+            {"id": "m1", "title": "Этап 1", "points": 25, "status": "completed"}
+        ], variant=v_code)
+        assert not EMOJI_REGEX.search(m_progress)
+

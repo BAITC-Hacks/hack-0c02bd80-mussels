@@ -1,3 +1,4 @@
+# Prototype: Three variants of the AI Sana platform design, switchable via ?variant= on existing routes.
 import streamlit as st
 import pandas as pd
 from typing import Dict, Any, List
@@ -18,12 +19,14 @@ from services import (
     calculate_recommendation_score,
     Storage,
     AIGenerator,
+    VARIANT_CONFIGS,
     get_gauge_color_scheme,
     render_circular_gauge,
     render_milestone_progress,
     render_xp_award_card,
     render_xp_pending_card,
-    render_xp_summary
+    render_xp_summary,
+    render_prototype_switcher
 )
 
 # Page configuration
@@ -33,98 +36,56 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for crisp white theme, professional typography (Strictly NO EMOJIS)
-st.markdown("""
-<style>
-    /* Clean white theme foundation */
-    .stApp {
-        background-color: #ffffff;
-        color: #0f172a;
-    }
-    header[data-testid="stHeader"] {
-        background-color: #ffffff;
-    }
-    section[data-testid="stSidebar"] {
-        background-color: #f8fafc;
-        border-right: 1px solid #e2e8f0;
-    }
-    /* Typography & Hierarchy */
-    .main-title {
-        font-size: 2.1rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 0.25rem;
-        letter-spacing: -0.5px;
-    }
-    .subtitle {
-        font-size: 1.05rem;
-        color: #475569;
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-    }
-    /* Badges */
-    .badge {
-        display: inline-block;
-        padding: 4px 10px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        border-radius: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .badge-priority {
-        background-color: #dcfce7;
-        color: #15803d;
-        border: 1px solid #86efac;
-    }
-    .badge-ready {
-        background-color: #dbeafe;
-        color: #1d4ed8;
-        border: 1px solid #93c5fd;
-    }
-    .badge-workable {
-        background-color: #fef9c3;
-        color: #a16207;
-        border: 1px solid #fde047;
-    }
-    .badge-draft {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        border: 1px solid #fca5a5;
-    }
-    /* Card Containers */
-    .task-card-box {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 22px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .task-card-box:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 10px -2px rgba(0,0,0,0.06);
-    }
-    .recommendation-banner {
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-left: 4px solid #10b981;
-        padding: 12px 16px;
-        margin-bottom: 12px;
-        border-radius: 6px;
-        color: #15803d;
-        font-size: 0.9rem;
-    }
-    .score-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Read active UI design variant from URL (?variant=A, B, or C)
+current_variant = st.query_params.get("variant", "A").upper()
+if current_variant not in ["A", "B", "C"]:
+    current_variant = "A"
+
+variant_cfg = VARIANT_CONFIGS[current_variant]
+
+# Custom CSS for the active design variant (Strictly NO EMOJIS)
+if current_variant == "B":
+    st.markdown("""
+    <style>
+        .stApp { background-color: #fafafa; color: #18181b; }
+        header[data-testid="stHeader"] { background-color: #fafafa; }
+        section[data-testid="stSidebar"] { background-color: #f4f4f5; border-right: 1px solid #e4e4e7; }
+        .main-title { font-size: 2.0rem; font-weight: 700; color: #18181b; margin-bottom: 0.2rem; letter-spacing: -0.5px; }
+        .subtitle { font-size: 1.0rem; color: #71717a; margin-bottom: 1.4rem; }
+        .task-card-box { background-color: #ffffff; border: 1px solid #e4e4e7; border-left: 4px solid #71717a; border-radius: 4px; padding: 18px 20px; margin-bottom: 16px; box-shadow: none; transition: border-color 0.2s ease; }
+        .task-card-box:hover { border-color: #a1a1aa; border-left-color: #18181b; }
+        .recommendation-banner { background-color: #f4f4f5; border: 1px solid #e4e4e7; border-left: 4px solid #047857; padding: 10px 14px; margin-bottom: 10px; border-radius: 4px; color: #047857; font-size: 0.9rem; }
+        .score-card { background-color: #ffffff; border: 1px solid #e4e4e7; border-radius: 4px; padding: 14px; margin-bottom: 14px; }
+    </style>
+    """, unsafe_allow_html=True)
+elif current_variant == "C":
+    st.markdown("""
+    <style>
+        .stApp { background-color: #ffffff; color: #09090b; }
+        header[data-testid="stHeader"] { background-color: #ffffff; }
+        section[data-testid="stSidebar"] { background-color: #f8fafc; border-right: 2px solid #0f172a; }
+        .main-title { font-size: 2.2rem; font-weight: 900; color: #09090b; margin-bottom: 0.25rem; letter-spacing: -1px; }
+        .subtitle { font-size: 1.05rem; color: #334155; margin-bottom: 1.5rem; }
+        .task-card-box { background-color: #ffffff; border: 2px solid #0f172a; border-radius: 8px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .task-card-box:hover { box-shadow: 0 8px 16px -2px rgba(15, 23, 42, 0.14); }
+        .recommendation-banner { background-color: #0f172a; border: 1px solid #1e293b; padding: 12px 16px; margin-bottom: 12px; border-radius: 6px; color: #f8fafc; font-size: 0.9rem; }
+        .score-card { background-color: #ffffff; border: 2px solid #0f172a; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+        .stApp { background-color: #ffffff; color: #0f172a; }
+        header[data-testid="stHeader"] { background-color: #ffffff; }
+        section[data-testid="stSidebar"] { background-color: #f8fafc; border-right: 1px solid #e2e8f0; }
+        .main-title { font-size: 2.1rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; letter-spacing: -0.5px; }
+        .subtitle { font-size: 1.05rem; color: #475569; margin-bottom: 1.5rem; line-height: 1.5; }
+        .task-card-box { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .task-card-box:hover { border-color: #cbd5e1; box-shadow: 0 4px 10px -2px rgba(0,0,0,0.06); }
+        .recommendation-banner { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #10b981; padding: 12px 16px; margin-bottom: 12px; border-radius: 6px; color: #15803d; font-size: 0.9rem; }
+        .score-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Initialize storage and AI engine
 @st.cache_resource
@@ -164,6 +125,21 @@ menu = st.sidebar.radio(
         "5. Экспресс-демонстрация (Жюри)"
     ]
 )
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("Прототип дизайна (UI / Цвета)")
+selected_variant = st.sidebar.radio(
+    "Вариант стиля UI:",
+    options=["A", "B", "C"],
+    index=["A", "B", "C"].index(current_variant),
+    format_func=lambda x: f"{x}: {VARIANT_CONFIGS[x]['name']}"
+)
+if selected_variant != current_variant:
+    st.query_params["variant"] = selected_variant
+    st.rerun()
+
+st.sidebar.caption(f"**{variant_cfg['full_name']}**")
+st.sidebar.caption(variant_cfg["tagline"])
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Статус системы")
@@ -337,25 +313,66 @@ if menu == "1. Конструктор задачи (Бизнес)":
             # Top rating banner with dynamic circular SVG speedometer
             col_r1, col_r2 = st.columns([1, 2])
             with col_r1:
-                gauge_html = render_circular_gauge(c_score, size=150, title="Рейтинг готовности")
+                gauge_html = render_circular_gauge(c_score, size=150, title="Рейтинг готовности", variant=current_variant)
                 st.markdown(gauge_html, unsafe_allow_html=True)
             with col_r2:
-                st.markdown("<div style='font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:10px;'>Факторы начисления баллов:</div>", unsafe_allow_html=True)
-                breakdown_cols = st.columns(4)
-                idx = 0
-                for f_key, pts in c_breakdown.items():
-                    col_idx = idx % 4
-                    max_pts = SCORING_WEIGHTS[f_key]["max_points"]
-                    is_full = pts == max_pts
-                    val_color = "#15803d" if is_full else ("#b45309" if pts > 0 else "#64748b")
-                    breakdown_cols[col_idx].markdown(
-                        f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.02);'>"
-                        f"<div style='font-size:0.75rem; color:#64748b; font-weight:600;'>{SCORING_WEIGHTS[f_key]['title']}</div>"
-                        f"<div style='font-size:1.1rem; font-weight:800; color:{val_color}; margin-top:2px;'>{pts} <span style='font-size:0.75rem; font-weight:500; color:#94a3b8;'>/ {max_pts}</span></div>"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-                    idx += 1
+                if current_variant == "B":
+                    st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#18181b; margin-bottom:8px;'>Факторы готовности ТЗ:</div>", unsafe_allow_html=True)
+                    f_col1, f_col2 = st.columns(2)
+                    idx = 0
+                    for f_key, pts in c_breakdown.items():
+                        target_col = f_col1 if idx % 2 == 0 else f_col2
+                        max_pts = SCORING_WEIGHTS[f_key]["max_points"]
+                        pct = int((pts / max_pts) * 100)
+                        bar_bg = "#047857" if pts == max_pts else ("#b45309" if pts > 0 else "#e4e4e7")
+                        target_col.markdown(
+                            f"<div style='border-bottom:1px solid #e4e4e7; padding:4px 0; margin-bottom:6px;'>"
+                            f"<div style='display:flex; justify-content:space-between; font-size:0.8rem;'>"
+                            f"<span style='color:#18181b; font-weight:600;'>{SCORING_WEIGHTS[f_key]['title']}</span>"
+                            f"<span style='color:#71717a; font-weight:700;'>{pts}/{max_pts} б.</span>"
+                            f"</div>"
+                            f"<div style='background:#f4f4f5; height:5px; border-radius:999px; margin-top:3px; overflow:hidden;'>"
+                            f"<div style='width:{pct}%; height:100%; background:{bar_bg}; border-radius:999px;'></div>"
+                            f"</div>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                        idx += 1
+                elif current_variant == "C":
+                    st.markdown("<div style='font-size:0.95rem; font-weight:800; color:#09090b; margin-bottom:8px;'>ТЕЛЕМЕТРИЯ СКОРИНГА (ШВЕЙЦАРСКИЙ HUD):</div>", unsafe_allow_html=True)
+                    breakdown_cols = st.columns(4)
+                    idx = 0
+                    for f_key, pts in c_breakdown.items():
+                        col_idx = idx % 4
+                        max_pts = SCORING_WEIGHTS[f_key]["max_points"]
+                        is_full = pts == max_pts
+                        chip_bg = "#064e3b" if is_full else ("#78350f" if pts > 0 else "#f1f5f9")
+                        chip_text = "#ecfdf5" if is_full else ("#fef3c7" if pts > 0 else "#475569")
+                        breakdown_cols[col_idx].markdown(
+                            f"<div style='background:#ffffff; border:2px solid #0f172a; border-radius:6px; padding:8px; margin-bottom:8px;'>"
+                            f"<div style='font-size:0.75rem; color:#475569; font-weight:700;'>{SCORING_WEIGHTS[f_key]['title']}</div>"
+                            f"<div style='margin-top:4px;'><span style='display:inline-block; padding:2px 6px; background:{chip_bg}; color:{chip_text}; border-radius:4px; font-size:0.85rem; font-weight:800;'>{pts} / {max_pts}</span></div>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                        idx += 1
+                else:  # Variant A
+                    st.markdown("<div style='font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:10px;'>Факторы начисления баллов:</div>", unsafe_allow_html=True)
+                    breakdown_cols = st.columns(4)
+                    idx = 0
+                    for f_key, pts in c_breakdown.items():
+                        col_idx = idx % 4
+                        max_pts = SCORING_WEIGHTS[f_key]["max_points"]
+                        is_full = pts == max_pts
+                        val_color = "#15803d" if is_full else ("#b45309" if pts > 0 else "#64748b")
+                        breakdown_cols[col_idx].markdown(
+                            f"<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.02);'>"
+                            f"<div style='font-size:0.75rem; color:#64748b; font-weight:600;'>{SCORING_WEIGHTS[f_key]['title']}</div>"
+                            f"<div style='font-size:1.1rem; font-weight:800; color:{val_color}; margin-top:2px;'>{pts} <span style='font-size:0.75rem; font-weight:500; color:#94a3b8;'>/ {max_pts}</span></div>"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                        idx += 1
 
             st.markdown("---")
 
@@ -458,33 +475,79 @@ elif menu == "2. Общий каталог задач":
 
     for task in filtered_tasks:
         task_rating = task.get("rating", 0)
-        gauge_svg = render_circular_gauge(task_rating, size=58, compact=True)
-        colors = get_gauge_color_scheme(task_rating)
+        gauge_svg = render_circular_gauge(task_rating, size=58, compact=True, variant=current_variant)
+        colors = get_gauge_color_scheme(task_rating, variant=current_variant)
         level_name = task.get("readiness_level", colors["level"])
 
         with st.container():
-            st.markdown(f"""
-            <div class='task-card-box'>
-                <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:10px;'>
-                    <div style='flex:1;'>
-                        <h3 style='margin:0 0 6px 0; color:#0f172a; font-size:1.25rem; font-weight:700;'>{task.get('title')}</h3>
-                        <p style='color:#64748b; font-size:0.85rem; margin:0 0 10px 0;'>
-                            Отрасль: <b style='color:#334155;'>{task.get('industry')}</b> | Направление: <b style='color:#334155;'>{task.get('task_type')}</b>
-                        </p>
-                    </div>
-                    <div style='display:flex; align-items:center; gap:12px;'>
-                        <div style='text-align:right;'>
-                            <span style='display:inline-block; padding:4px 10px; background:{colors["badge_bg"]}; color:{colors["badge_text"]}; border:1px solid {colors["badge_border"]}; border-radius:6px; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;'>
-                                {level_name}
-                            </span>
-                            <div style='font-size:0.75rem; color:#64748b; margin-top:3px;'>Рейтинг готовности</div>
+            if current_variant == "B":
+                st.markdown(f"""
+                <div class='task-card-box' style='border-left:4px solid {colors["primary"]};'>
+                    <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:12px;'>
+                        <div style='flex:1;'>
+                            <div style='display:flex; align-items:center; gap:8px; margin-bottom:4px;'>
+                                <span style='font-size:0.75rem; font-weight:700; color:{colors["text"]}; text-transform:uppercase;'>
+                                    {level_name}
+                                </span>
+                                <span style='color:#a1a1aa;'>•</span>
+                                <span style='font-size:0.8rem; color:#71717a;'>{task.get('industry')}</span>
+                            </div>
+                            <h3 style='margin:0 0 6px 0; color:#18181b; font-size:1.15rem; font-weight:700;'>{task.get('title')}</h3>
+                            <p style='color:#52525b; font-size:0.9rem; line-height:1.4; margin:0;'>{task.get('context_need')}</p>
                         </div>
-                        {gauge_svg}
+                        <div style='display:flex; align-items:center;'>
+                            {gauge_svg}
+                        </div>
                     </div>
                 </div>
-                <p style='color:#334155; font-size:0.95rem; line-height:1.5; margin:0;'><b>Контекст и потребность:</b> {task.get('context_need')}</p>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            elif current_variant == "C":
+                st.markdown(f"""
+                <div class='task-card-box'>
+                    <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;'>
+                        <div style='flex:1;'>
+                            <div style='margin-bottom:6px;'>
+                                <span style='display:inline-block; padding:3px 8px; background:{colors["badge_bg"]}; color:{colors["badge_text"]}; border-radius:4px; font-size:0.75rem; font-weight:800; text-transform:uppercase;'>
+                                    {level_name}
+                                </span>
+                                <span style='font-size:0.8rem; color:#64748b; margin-left:8px;'>{task.get('task_type')}</span>
+                            </div>
+                            <h3 style='margin:0; color:#09090b; font-size:1.25rem; font-weight:900;'>{task.get('title')}</h3>
+                        </div>
+                        <div style='display:flex; align-items:center; gap:10px;'>
+                            <div style='text-align:right;'>
+                                <div style='font-size:1.1rem; font-weight:900; color:#09090b;'>{task_rating} <span style='font-size:0.75rem; color:#64748b;'>/100</span></div>
+                                <div style='font-size:0.7rem; color:#64748b; text-transform:uppercase;'>Рейтинг ТЗ</div>
+                            </div>
+                            {gauge_svg}
+                        </div>
+                    </div>
+                    <p style='color:#1e293b; font-size:0.95rem; line-height:1.5; margin:0;'><b>Потребность:</b> {task.get('context_need')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            else:  # Variant A
+                st.markdown(f"""
+                <div class='task-card-box'>
+                    <div style='display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:10px;'>
+                        <div style='flex:1;'>
+                            <h3 style='margin:0 0 6px 0; color:#0f172a; font-size:1.25rem; font-weight:700;'>{task.get('title')}</h3>
+                            <p style='color:#64748b; font-size:0.85rem; margin:0 0 10px 0;'>
+                                Отрасль: <b style='color:#334155;'>{task.get('industry')}</b> | Направление: <b style='color:#334155;'>{task.get('task_type')}</b>
+                            </p>
+                        </div>
+                        <div style='display:flex; align-items:center; gap:12px;'>
+                            <div style='text-align:right;'>
+                                <span style='display:inline-block; padding:4px 10px; background:{colors["badge_bg"]}; color:{colors["badge_text"]}; border:1px solid {colors["badge_border"]}; border-radius:6px; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;'>
+                                    {level_name}
+                                </span>
+                                <div style='font-size:0.75rem; color:#64748b; margin-top:3px;'>Рейтинг готовности</div>
+                            </div>
+                            {gauge_svg}
+                        </div>
+                    </div>
+                    <p style='color:#334155; font-size:0.95rem; line-height:1.5; margin:0;'><b>Контекст и потребность:</b> {task.get('context_need')}</p>
+                </div>
+                """, unsafe_allow_html=True)
 
             with st.expander("Подробная карточка задачи и критерии"):
                 col_d1, col_d2 = st.columns(2)
@@ -530,7 +593,7 @@ elif menu == "3. Кабинет студенческой команды":
     team_milestones = [m for m in all_stored_milestones if m.get("team_id") == team["id"]]
 
     # XP summary statistics
-    st.markdown(render_xp_summary(team, team_milestones), unsafe_allow_html=True)
+    st.markdown(render_xp_summary(team, team_milestones, variant=current_variant), unsafe_allow_html=True)
 
     # XP Cards Accordion/List
     with st.expander("Карточки начисления баллов прогресса (XP)", expanded=True):
@@ -552,13 +615,13 @@ elif menu == "3. Кабинет студенческой команды":
                 st.markdown("<div style='font-size:0.85rem; font-weight:700; color:#15803d; text-transform:uppercase; margin-bottom:8px;'>Подтвержденные начисления:</div>", unsafe_allow_html=True)
                 for cm in completed_m:
                     task_name = all_tasks_dict.get(cm.get("task_id"), "Бизнес-задача")
-                    st.markdown(render_xp_award_card(cm, task_name), unsafe_allow_html=True)
+                    st.markdown(render_xp_award_card(cm, task_name, variant=current_variant), unsafe_allow_html=True)
             
             if in_progress_m:
                 st.markdown("<div style='font-size:0.85rem; font-weight:700; color:#2563eb; text-transform:uppercase; margin-top:12px; margin-bottom:8px;'>Этапы в процессе выполнения:</div>", unsafe_allow_html=True)
                 for ipm in in_progress_m:
                     task_name = all_tasks_dict.get(ipm.get("task_id"), "Бизнес-задача")
-                    st.markdown(render_xp_pending_card(ipm, task_name), unsafe_allow_html=True)
+                    st.markdown(render_xp_pending_card(ipm, task_name, variant=current_variant), unsafe_allow_html=True)
 
     st.markdown("---")
     st.subheader("Рекомендованные задачи для вашей команды")
@@ -579,8 +642,8 @@ elif menu == "3. Кабинет студенческой команды":
         rec_score = item["rec_score"]
         rec_exp = item["rec_explanation"]
         t_rating = t.get("rating", 0)
-        gauge_svg = render_circular_gauge(t_rating, size=52, compact=True)
-        colors = get_gauge_color_scheme(t_rating)
+        gauge_svg = render_circular_gauge(t_rating, size=52, compact=True, variant=current_variant)
+        colors = get_gauge_color_scheme(t_rating, variant=current_variant)
         level_name = t.get("readiness_level", colors["level"])
 
         with st.container():
@@ -729,7 +792,7 @@ elif menu == "4. Отклики и решения бизнеса":
 
     if all_milestones:
         # Interactive Milestone Progress Visualizer (percentage, bar, steps)
-        st.markdown(render_milestone_progress(all_milestones, team_name=active_team_name), unsafe_allow_html=True)
+        st.markdown(render_milestone_progress(all_milestones, team_name=active_team_name, variant=current_variant), unsafe_allow_html=True)
 
         st.markdown("<div style='font-size:0.95rem; font-weight:700; color:#0f172a; margin-top:14px; margin-bottom:10px;'>Контрольные точки и подтверждение выполнения:</div>", unsafe_allow_html=True)
         for m in all_milestones:
@@ -826,3 +889,7 @@ elif menu == "5. Экспресс-демонстрация (Жюри)":
         st.session_state.current_question = None
         st.session_state.active_card = None
         st.success("Данные для демонстрации загружены. Перейдите в раздел '1. Конструктор задачи (Бизнес)'.")
+
+# Floating prototype switcher bar at bottom of screen
+st.markdown(render_prototype_switcher(current_variant), unsafe_allow_html=True)
+
